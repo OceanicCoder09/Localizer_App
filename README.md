@@ -88,8 +88,8 @@ A test file called `sample.rc` has been pre-packaged in the root folder of the p
 3. **Select Language**: Select **Japanese**, **Hindi**, **French**, or **German** from the dropdown menu.
 4. **Extract Strings**: Click **[Extract Strings]**. The grid will populate with 9 extracted strings, displaying keys and original English text.
 5. **Set API Key**: Enter your Gemini API Key in the top-right field. Toggle the reveal button (👁️) to verify characters. The key is automatically saved to [App.config](file:///d:/AutoDesk_POC/RcLocalizer/App.config).
-6. **Translate**: Click **[Translate (Gemini)]**. Misses are translated in an optimized batch, and translation memory hit rates are updated.
-7. **Validate**: Click **[Validate (Gemini)]**. The **Validation Results Panel** will appear on the right side:
+6. **Translate**: Click **[Translate ]**. Misses are translated in an optimized batch, and translation memory hit rates are updated.
+7. **Validate**: Click **[Validate]**. The **Validation Results Panel** will appear on the right side:
    - Green checks (✔) confirm that placeholder counts match and translation strings are not empty.
    - The AI quality panel shows the overall QA score and rating counts.
 8. **Visual Preview**: Click **[Open Preview Window]**. Select your target language in the dropdown to see menu bars and properties panels formatted live.

@@ -387,8 +387,8 @@
                 <!-- Right Columns: Operations -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
                     <Button Style="{StaticResource ModernButton}" Click="OnExtractStringsClick" IsEnabled="{Binding IsFileSelected}" Content="Extract Strings" Margin="0,0,10,0" Width="130"/>
-                    <Button Style="{StaticResource AccentButton}" Click="OnTranslateClick" IsEnabled="{Binding IsFileSelected}" Content="Translate (Gemini)" Margin="0,0,10,0" Width="150"/>
-                    <Button Style="{StaticResource ModernButton}" Click="OnValidateClick" IsEnabled="{Binding IsFileSelected}" Content="Validate (Gemini)" Width="150"/>
+                    <Button Style="{StaticResource AccentButton}" Click="OnTranslateClick" IsEnabled="{Binding IsFileSelected}" Content="Translate " Margin="0,0,10,0" Width="150"/>
+                    <Button Style="{StaticResource ModernButton}" Click="OnValidateClick" IsEnabled="{Binding IsFileSelected}" Content="Validate " Width="150"/>
                 </StackPanel>
             </Grid>
         </Border>
