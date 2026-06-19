@@ -456,6 +456,24 @@
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
+                        <DataGridTextColumn Header="Feedback" Binding="{Binding ValidationFeedback}" IsReadOnly="True" Width="3*">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="TextWrapping" Value="Wrap"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ValidationStatus}" Value="Excellent">
+                                            <Setter Property="Foreground" Value="#16A34A"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ValidationStatus}" Value="Good">
+                                            <Setter Property="Foreground" Value="#CA8A04"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ValidationStatus}" Value="Needs Review">
+                                            <Setter Property="Foreground" Value="#DC2626"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>

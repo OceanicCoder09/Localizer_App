@@ -53,36 +53,71 @@ namespace Localizer_App.Services
 
         private bool CheckItem(ResourceString originalItem, string? translation, ValidationResult result, ref bool allNotEmpty, ref bool allPlaceholders)
         {
-            // Why: Verify a single resource translation item.
+            // Why: Verify a single resource translation item and set its inline feedback.
+            var localErrors = new List<string>();
+
             if (string.IsNullOrEmpty(translation))
             {
                 allNotEmpty = false;
-                result.Errors.Add("[Empty Error] Key '" + originalItem.Key + "' is empty.");
+                string msg = "[Empty Error] Translation is empty.";
+                result.Errors.Add(msg + " (Key: '" + originalItem.Key + "')");
+                localErrors.Add(msg);
+
+                originalItem.ValidationScore = 0;
+                originalItem.ValidationStatus = "Needs Review";
+                originalItem.ValidationFeedback = string.Join(" ", localErrors);
                 return false;
             }
-            return CheckPlaceholders(originalItem, translation, result, ref allPlaceholders);
-        }
 
-        private bool CheckPlaceholders(ResourceString originalItem, string translation, ValidationResult result, ref bool allPlaceholders)
-        {
-            // Why: Compare formatting placeholders counts in original vs translated.
             bool passed = true;
+
+            // 1. Check placeholders
             foreach (var placeholder in Placeholders)
             {
-                passed &= CheckPlaceholderItem(originalItem, translation, placeholder, result, ref allPlaceholders);
+                int origCount = CountOccurrences(originalItem.Text, placeholder);
+                int transCount = CountOccurrences(translation, placeholder);
+                if (origCount != transCount)
+                {
+                    passed = false;
+                    allPlaceholders = false;
+                    string msg = $"[Placeholder Mismatch] '{placeholder}' count mismatch (Original: {origCount}, Translated: {transCount}).";
+                    result.Errors.Add(msg + " (Key: '" + originalItem.Key + "')");
+                    localErrors.Add(msg);
+                }
             }
-            return passed;
-        }
 
-        private bool CheckPlaceholderItem(ResourceString item, string translation, string placeholder, ValidationResult result, ref bool allPlaceholders)
-        {
-            // Why: Check if occurrence of single placeholder matches.
-            int origCount = CountOccurrences(item.Text, placeholder);
-            int transCount = CountOccurrences(translation, placeholder);
-            if (origCount == transCount) return true;
-            result.Errors.Add("[Placeholder Mismatch] Key '" + item.Key + "' placeholder '" + placeholder + "' count mismatch.");
-            allPlaceholders = false;
-            return false;
+            // 2. Check escape sequences
+            var escapes = new[] { "\\n", "\\t" };
+            foreach (var escape in escapes)
+            {
+                int origCount = CountOccurrences(originalItem.Text, escape);
+                int transCount = CountOccurrences(translation, escape);
+                if (origCount != transCount)
+                {
+                    passed = false;
+                    string msg = $"[Escape Mismatch] '{escape}' count mismatch (Original: {origCount}, Translated: {transCount}).";
+                    result.Errors.Add(msg + " (Key: '" + originalItem.Key + "')");
+                    localErrors.Add(msg);
+                }
+            }
+
+            if (!passed)
+            {
+                originalItem.ValidationScore = 0;
+                originalItem.ValidationStatus = "Needs Review";
+                originalItem.ValidationFeedback = string.Join(" ", localErrors);
+                return false;
+            }
+
+            // If local validation passes, and it doesn't have an AI validation status yet, set default local success status.
+            if (string.IsNullOrEmpty(originalItem.ValidationStatus))
+            {
+                originalItem.ValidationScore = 100;
+                originalItem.ValidationStatus = "Excellent";
+                originalItem.ValidationFeedback = "Local syntax checks passed.";
+            }
+
+            return true;
         }
 
         private int CountOccurrences(string source, string pattern)

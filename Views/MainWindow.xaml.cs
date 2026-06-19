@@ -47,6 +47,7 @@ namespace Localizer_App.Views
             TargetLanguages.Add(new TargetLanguage { Name = "French", CultureCode = "fr-FR" });
             TargetLanguages.Add(new TargetLanguage { Name = "German", CultureCode = "de-DE" });
             SelectedLanguage = TargetLanguages.First(x => x.CultureCode == "ja-JP");
+            AvailableModels.Add("gemini-3.5-flash");
             AvailableModels.Add("gemini-2.5-flash");
             AvailableModels.Add("gemini-1.5-flash");
             SelectedModel = AvailableModels.First();
@@ -201,42 +202,59 @@ namespace Localizer_App.Views
         {
             // Why: Run Gemini QA check and local format tests.
             StatusMessage = "Running validations...";
+
+            // Clear previous validations
+            foreach (var res in ResourceStrings)
+            {
+                res.ValidationScore = null;
+                res.ValidationStatus = null;
+                res.ValidationFeedback = null;
+            }
+
             var list = ResourceStrings.Where(r => !string.IsNullOrEmpty(r.Translated)).ToList();
             var qaResults = await _aiValidationService.ValidateAsync(list, SelectedLanguage.Name, SelectedLanguage.CultureCode, ApiKeyTextBox.Text, SelectedModel);
-            MapQaResults(qaResults);
+
+            MapQaResultsOnly(qaResults);
             RunLocalValidation();
+            RecalculateAndSaveStats();
             ShowValidationPanel();
         }
 
-        private void MapQaResults(List<ValidationOutputItem> qaResults)
+        private void MapQaResultsOnly(List<ValidationOutputItem> qaResults)
         {
-            // Why: Map Gemini QA results back to resource strings and calculate averages.
-            var stats = new ValStats();
+            // Why: Map Gemini QA results back to resource strings.
             foreach (var res in ResourceStrings)
             {
                 var match = qaResults.FirstOrDefault(q => q.Key == res.Key);
-                if (match != null) ApplyQaMatch(res, match, stats);
+                if (match != null)
+                {
+                    res.ValidationScore = match.Score;
+                    res.ValidationStatus = match.Status;
+                    res.ValidationFeedback = match.Feedback;
+                }
             }
-            SaveValidationStats(qaResults.Count, stats);
         }
 
-        private void ApplyQaMatch(ResourceString res, ValidationOutputItem match, ValStats stats)
+        private void RecalculateAndSaveStats()
         {
-            // Why: Set QA values on model and update statistics.
-            res.ValidationScore = match.Score;
-            res.ValidationStatus = match.Status;
-            res.ValidationFeedback = match.Feedback;
-            stats.TotalScore += match.Score;
-            if (match.Score >= 90) stats.Excellent++;
-            else if (match.Score >= 80) stats.Good++;
-            else stats.NeedsReview++;
-        }
+            // Why: Recalculate validation statistics based on the final state of all strings.
+            var stats = new ValStats();
+            int count = 0;
+            foreach (var res in ResourceStrings)
+            {
+                // We only count strings that have a validation score/status (i.e. those that are translated or validated)
+                if (res.ValidationScore.HasValue)
+                {
+                    count++;
+                    stats.TotalScore += res.ValidationScore.Value;
+                    if (res.ValidationScore.Value >= 90) stats.Excellent++;
+                    else if (res.ValidationScore.Value >= 80) stats.Good++;
+                    else stats.NeedsReview++;
+                }
+            }
 
-        private void SaveValidationStats(int count, ValStats stats)
-        {
-            // Why: Save AI validation statistics.
             AiValTotalStrings = count;
-            AiValAverageScore = count > 0 ? stats.TotalScore / count : 0;
+            AiValAverageScore = count > 0 ? (double)stats.TotalScore / count : 0;
             AiValExcellentCount = stats.Excellent;
             AiValGoodCount = stats.Good;
             AiValNeedsReviewCount = stats.NeedsReview;

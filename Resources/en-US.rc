@@ -1,0 +1,22 @@
+// English (United States) resources
+LANGUAGE 9, 1 // LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+STRINGTABLE
+BEGIN
+    IDS_FILE                "File"
+    IDS_EDIT                "Edit"
+    IDS_VIEW                "View"
+    IDS_HELP                "Help"
+    IDS_NEW_PROJECT         "New Project"
+    IDS_OPEN                "Open"
+    IDS_SAVE                "Save"
+    IDS_EXPORT              "Export"
+    IDS_PROPERTIES          "Properties"
+    IDS_NAME                "Name"
+    IDS_DESCRIPTION         "Description"
+    IDS_CATEGORY            "Category"
+    IDS_STATUS              "Status"
+    IDS_APPLY               "Apply"
+    IDS_CANCEL              "Cancel"
+    IDS_READY               "Ready"
+END
