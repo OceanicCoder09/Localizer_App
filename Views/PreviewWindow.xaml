@@ -139,10 +139,12 @@
         <!-- Menu bar -->
         <Border Grid.Row="1" Background="#3C3C3C" BorderBrush="#252526" BorderThickness="0,0,0,1">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Style="{StaticResource PreviewMenuItem}" Text="{Binding FileMenu}"/>
-                <TextBlock Style="{StaticResource PreviewMenuItem}" Text="{Binding EditMenu}"/>
-                <TextBlock Style="{StaticResource PreviewMenuItem}" Text="{Binding ViewMenu}"/>
-                <TextBlock Style="{StaticResource PreviewMenuItem}" Text="{Binding HelpMenu}"/>
+                <TextBlock Style="{StaticResource PreviewMenuItem}" Text="{Binding SupplyText}"/>
+                <TextBlock Style="{StaticResource PreviewMenuItem}" Text="{Binding UpheavalText}"/>
+                <TextBlock Style="{StaticResource PreviewMenuItem}" Text="{Binding VeryText}"/>
+                <TextBlock Style="{StaticResource PreviewMenuItem}" Text="{Binding SadlyText}"/>
+                <TextBlock Style="{StaticResource PreviewMenuItem}" Text="{Binding NowText}"/>
+                <TextBlock Style="{StaticResource PreviewMenuItem}" Text="{Binding AutoText}"/>
             </StackPanel>
         </Border>
 

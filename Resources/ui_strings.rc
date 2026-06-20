@@ -3,10 +3,12 @@ LANGUAGE 9, 1 // LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 STRINGTABLE
 BEGIN
-    IDS_FILE                "File"
-    IDS_EDIT                "Edit"
-    IDS_VIEW                "View"
-    IDS_HELP                "Help"
+    IDS_SUPPLY              "Supply"
+    IDS_UPHEAVAL            "Upheaval"
+    IDS_VERY                "Very"
+    IDS_SADLY               "Sadly"
+    IDS_NOW                 "Now"
+    IDS_AUTO                "Auto"
     IDS_NEW_PROJECT         "New Project"
     IDS_OPEN                "Open"
     IDS_SAVE                "Save"

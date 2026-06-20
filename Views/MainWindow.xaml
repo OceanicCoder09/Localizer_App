@@ -318,19 +318,10 @@
                 <TextBlock Text="Proof of Concept for hybrid STRINGTABLE parsing and translation" Foreground="#64748B" FontSize="12" Margin="0,3,0,0"/>
             </StackPanel>
             
-            <!-- API Key and Model Block -->
+            <!-- Model Block -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Text="Model:" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                <ComboBox ItemsSource="{Binding AvailableModels}" SelectedItem="{Binding SelectedModel}" Width="150" Margin="0,0,15,0"/>
-                
-                <TextBlock Text="API Key:" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <Grid Width="200" Margin="0,0,5,0">
-                    <PasswordBox x:Name="ApiKeyPasswordBox" PasswordChanged="OnPasswordChanged" 
-                                 Padding="10,8" FontSize="13" VerticalAlignment="Center"/>
-                    <TextBox x:Name="ApiKeyTextBox" TextChanged="OnTextChanged" 
-                             Padding="10,8" FontSize="13" VerticalAlignment="Center" Visibility="Collapsed"/>
-                </Grid>
-                <ToggleButton x:Name="ToggleRevealButton" Click="OnToggleRevealClick" Content="👁️" Width="36" Height="36" Cursor="Hand" Background="#FFFFFF" BorderBrush="#CBD5E1"/>
+                <ComboBox ItemsSource="{Binding AvailableModels}" SelectedItem="{Binding SelectedModel}" Width="150"/>
             </StackPanel>
         </Grid>
 

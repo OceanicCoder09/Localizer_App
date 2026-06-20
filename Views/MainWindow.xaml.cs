@@ -24,6 +24,7 @@ namespace Localizer_App.Views
         private readonly RcGeneratorService _rcGeneratorService = new RcGeneratorService();
         private readonly TranslationMemoryService _tmService = new TranslationMemoryService();
         private readonly AiValidationService _aiValidationService = new AiValidationService();
+        private string _apiKey = string.Empty;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         public ObservableCollection<ResourceString> ResourceStrings { get; } = new();
@@ -32,11 +33,11 @@ namespace Localizer_App.Views
 
         public MainWindow()
         {
-            // Why: Initialize components, setup bindings, configurations, and read API key from App.config.
+            // Why: Initialize components, setup bindings, configurations, and load API key.
             InitializeComponent();
             DataContext = this;
             InitializeProperties();
-            InitializeApiKey();
+            _apiKey = LoadApiKeyFromAppData();
         }
 
         private void InitializeProperties()
@@ -53,33 +54,44 @@ namespace Localizer_App.Views
             SelectedModel = AvailableModels.First();
         }
 
-        private void InitializeApiKey()
+        private string GetApiKeyFilePath()
         {
-            // Why: Load API key from App.config and set the UI password fields.
-            string key = LoadApiKeyFromConfig();
-            ApiKeyPasswordBox.Password = key;
-            ApiKeyTextBox.Text = key;
+            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string dir = Path.Combine(appData, "LocalizerApp");
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+            return Path.Combine(dir, "config.env");
         }
 
-        private void OnPasswordChanged(object sender, RoutedEventArgs e)
+        private string LoadApiKeyFromAppData()
         {
-            // Why: Sync the plain text box with the PasswordBox value.
-            if (ApiKeyTextBox.Text != ApiKeyPasswordBox.Password) ApiKeyTextBox.Text = ApiKeyPasswordBox.Password;
-        }
+            string filePath = GetApiKeyFilePath();
+            if (!File.Exists(filePath))
+            {
+                string legacyKey = LoadApiKeyFromConfig();
+                try
+                {
+                    File.WriteAllText(filePath, $"GEMINI_API_KEY={legacyKey}\n");
+                }
+                catch { }
+                return legacyKey;
+            }
 
-        private void OnTextChanged(object sender, TextChangedEventArgs e)
-        {
-            // Why: Sync the PasswordBox with the plain text box and save it to app settings.
-            if (ApiKeyPasswordBox.Password != ApiKeyTextBox.Text) ApiKeyPasswordBox.Password = ApiKeyTextBox.Text;
-            SaveApiKeyToConfig(ApiKeyTextBox.Text);
-        }
-
-        private void OnToggleRevealClick(object sender, RoutedEventArgs e)
-        {
-            // Why: Show or hide the API key text based on checkbox.
-            bool show = ToggleRevealButton.IsChecked == true;
-            ApiKeyTextBox.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
-            ApiKeyPasswordBox.Visibility = show ? Visibility.Collapsed : Visibility.Visible;
+            try
+            {
+                foreach (var line in File.ReadLines(filePath))
+                {
+                    var trimmed = line.Trim();
+                    if (trimmed.StartsWith("GEMINI_API_KEY=", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return trimmed.Substring("GEMINI_API_KEY=".Length).Trim();
+                    }
+                }
+            }
+            catch { }
+            return string.Empty;
         }
 
         private void OnSelectFileClick(object sender, RoutedEventArgs e)
@@ -145,14 +157,14 @@ namespace Localizer_App.Views
             if (misses.Count > 0)
             {
                 StatusMessage = "Translating " + misses.Count + " strings...";
-                await _translationService.TranslateAsync(misses, SelectedLanguage.Name, SelectedLanguage.CultureCode, ApiKeyTextBox.Text, SelectedModel);
+                await _translationService.TranslateAsync(misses, SelectedLanguage.Name, SelectedLanguage.CultureCode, _apiKey, SelectedModel);
                 UpdateCacheAndSave(misses, cache);
             }
             else StatusMessage = "All translations loaded from cache.";
             RefreshGrid();
         }
 
-        private List<ResourceString> ResolveFromCache(Dictionary<string, string> cache)
+        private List<ResourceString> ResolveFromCache(Dictionary<string, CacheEntry> cache)
         {
             // Why: Separate translated cache hits from miss list.
             var misses = new List<ResourceString>();
@@ -163,23 +175,34 @@ namespace Localizer_App.Views
             return misses;
         }
 
-        private void CheckCacheItem(ResourceString item, Dictionary<string, string> cache, List<ResourceString> misses)
+        private void CheckCacheItem(ResourceString item, Dictionary<string, CacheEntry> cache, List<ResourceString> misses)
         {
             // Why: Resolve single string item from translation memory or mark as miss.
-            if (cache.TryGetValue(item.Text, out string? trans))
+            if (cache.TryGetValue(item.Text, out CacheEntry? entry))
             {
-                item.Translated = trans;
+                item.Translated = entry.Translated;
+                item.ValidationScore = entry.ValidationScore;
+                item.ValidationStatus = entry.ValidationStatus;
+                item.ValidationFeedback = entry.ValidationFeedback;
                 CacheHits++;
             }
             else misses.Add(item);
         }
 
-        private void UpdateCacheAndSave(List<ResourceString> misses, Dictionary<string, string> cache)
+        private void UpdateCacheAndSave(List<ResourceString> misses, Dictionary<string, CacheEntry> cache)
         {
             // Why: Write translated outputs back to local cache dictionary and save file.
             foreach (var item in misses)
             {
-                if (!string.IsNullOrEmpty(item.Translated)) cache[item.Text] = item.Translated;
+                if (!string.IsNullOrEmpty(item.Translated))
+                {
+                    if (!cache.TryGetValue(item.Text, out var entry))
+                    {
+                        entry = new CacheEntry();
+                        cache[item.Text] = entry;
+                    }
+                    entry.Translated = item.Translated;
+                }
             }
             _tmService.SaveMemory(SelectedLanguage.CultureCode, cache);
         }
@@ -212,9 +235,47 @@ namespace Localizer_App.Views
             }
 
             var list = ResourceStrings.Where(r => !string.IsNullOrEmpty(r.Translated)).ToList();
-            var qaResults = await _aiValidationService.ValidateAsync(list, SelectedLanguage.Name, SelectedLanguage.CultureCode, ApiKeyTextBox.Text, SelectedModel);
+            var cache = _tmService.LoadMemory(SelectedLanguage.CultureCode);
+            var geminiValidateList = new List<ResourceString>();
 
-            MapQaResultsOnly(qaResults);
+            foreach (var res in list)
+            {
+                if (cache.TryGetValue(res.Text, out var entry) && 
+                    res.Translated == entry.Translated && 
+                    entry.ValidationScore.HasValue && 
+                    !string.IsNullOrEmpty(entry.ValidationStatus))
+                {
+                    res.ValidationScore = entry.ValidationScore;
+                    res.ValidationStatus = entry.ValidationStatus;
+                    res.ValidationFeedback = entry.ValidationFeedback;
+                }
+                else
+                {
+                    geminiValidateList.Add(res);
+                }
+            }
+
+            if (geminiValidateList.Count > 0)
+            {
+                var qaResults = await _aiValidationService.ValidateAsync(geminiValidateList, SelectedLanguage.Name, SelectedLanguage.CultureCode, _apiKey, SelectedModel);
+                MapQaResultsOnly(qaResults);
+
+                // Update cache with validation results
+                foreach (var res in geminiValidateList)
+                {
+                    if (!cache.TryGetValue(res.Text, out var entry))
+                    {
+                        entry = new CacheEntry();
+                        cache[res.Text] = entry;
+                    }
+                    entry.Translated = res.Translated;
+                    entry.ValidationScore = res.ValidationScore;
+                    entry.ValidationStatus = res.ValidationStatus;
+                    entry.ValidationFeedback = res.ValidationFeedback;
+                }
+                _tmService.SaveMemory(SelectedLanguage.CultureCode, cache);
+            }
+
             RunLocalValidation();
             RecalculateAndSaveStats();
             ShowValidationPanel();
@@ -304,9 +365,8 @@ namespace Localizer_App.Views
 
         private void OnOpenPreviewClick(object sender, RoutedEventArgs e)
         {
-            // Why: Launch the design preview studio window.
-            string dir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources");
-            var preview = new PreviewWindow(dir);
+            // Why: Launch the design preview studio window, passing in-memory translated strings.
+            var preview = new PreviewWindow(ResourceStrings.ToList(), SelectedLanguage.CultureCode);
             preview.ShowDialog();
         }
 

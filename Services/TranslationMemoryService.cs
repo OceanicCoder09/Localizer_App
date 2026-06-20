@@ -5,9 +5,17 @@ using System.Text.Json;
 
 namespace Localizer_App.Services
 {
+    public class CacheEntry
+    {
+        public string Translated { get; set; } = string.Empty;
+        public int? ValidationScore { get; set; }
+        public string? ValidationStatus { get; set; }
+        public string? ValidationFeedback { get; set; }
+    }
+
     public class TranslationMemoryService
     {
-        // Why: Local caching service to read/write translations to avoid redundant API queries.
+        // Why: Local caching service to read/write translations and validation status to avoid redundant API queries.
         private readonly string _tmFolder;
 
         public TranslationMemoryService()
@@ -23,7 +31,7 @@ namespace Localizer_App.Services
             return Path.Combine(_tmFolder, cultureCode + ".json");
         }
 
-        public Dictionary<string, string> LoadMemory(string cultureCode)
+        public Dictionary<string, CacheEntry> LoadMemory(string cultureCode)
         {
             // Why: Load JSON dictionary for culture from file.
             string path = GetFilePath(cultureCode);
@@ -34,36 +42,51 @@ namespace Localizer_App.Services
             return TryReadMemory(path);
         }
 
-        private Dictionary<string, string> CreateNewMemory(string path)
+        private Dictionary<string, CacheEntry> CreateNewMemory(string path)
         {
             // Why: Create default empty settings file.
             File.WriteAllText(path, "{}", System.Text.Encoding.UTF8);
-            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            return new Dictionary<string, CacheEntry>(StringComparer.OrdinalIgnoreCase);
         }
 
-        private Dictionary<string, string> TryReadMemory(string path)
+        private Dictionary<string, CacheEntry> TryReadMemory(string path)
         {
             // Why: Parse JSON cache and handle exceptions cleanly.
             try
             {
                 string json = File.ReadAllText(path, System.Text.Encoding.UTF8);
-                var dict = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
-                return ConvertToDict(dict);
+                var dict = JsonSerializer.Deserialize<Dictionary<string, CacheEntry>>(json);
+                if (dict != null)
+                {
+                    return new Dictionary<string, CacheEntry>(dict, StringComparer.OrdinalIgnoreCase);
+                }
             }
             catch
             {
-                return HandleCorrupted(path);
+                // Fallback to legacy string dictionary format migration
+                try
+                {
+                    string json = File.ReadAllText(path, System.Text.Encoding.UTF8);
+                    var oldDict = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+                    if (oldDict != null)
+                    {
+                        var newDict = new Dictionary<string, CacheEntry>(StringComparer.OrdinalIgnoreCase);
+                        foreach (var kvp in oldDict)
+                        {
+                            newDict[kvp.Key] = new CacheEntry { Translated = kvp.Value };
+                        }
+                        return newDict;
+                    }
+                }
+                catch
+                {
+                    return HandleCorrupted(path);
+                }
             }
+            return CreateNewMemory(path);
         }
 
-        private Dictionary<string, string> ConvertToDict(Dictionary<string, string>? dict)
-        {
-            // Why: Create case-insensitive dictionary representation of cache dict.
-            if (dict == null) return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            return new Dictionary<string, string>(dict, StringComparer.OrdinalIgnoreCase);
-        }
-
-        private Dictionary<string, string> HandleCorrupted(string path)
+        private Dictionary<string, CacheEntry> HandleCorrupted(string path)
         {
             // Why: If JSON is corrupted, move file to a backup name and create empty settings.
             string time = DateTime.Now.ToString("yyyyMMddHHmmss");
@@ -72,7 +95,7 @@ namespace Localizer_App.Services
             return CreateNewMemory(path);
         }
 
-        public void SaveMemory(string cultureCode, Dictionary<string, string> memory)
+        public void SaveMemory(string cultureCode, Dictionary<string, CacheEntry> memory)
         {
             // Why: Save memory dictionary to JSON file.
             string path = GetFilePath(cultureCode);

@@ -80,18 +80,45 @@ namespace Localizer_App.Services
         {
             string systemInstruction = GetSystemInstruction();
             string prompt = GetPrompt(batch, languageName, languageCode);
-            string jsonResponse = await _geminiService.CallApiAsync(systemInstruction, prompt, apiKey, model);
-            UpdateTranslations(batch, jsonResponse);
+            
+            var modelsToTry = new List<string> { model };
+            foreach (var m in new[] { "gemini-3.5-flash", "gemini-2.5-flash", "gemini-1.5-flash" })
+            {
+                if (!modelsToTry.Contains(m))
+                {
+                    modelsToTry.Add(m);
+                }
+            }
+
+            Exception? lastException = null;
+            foreach (var currentModel in modelsToTry)
+            {
+                try
+                {
+                    string jsonResponse = await _geminiService.CallApiAsync(systemInstruction, prompt, apiKey, currentModel);
+                    UpdateTranslations(batch, jsonResponse);
+                    return; // Success!
+                }
+                catch (Exception ex)
+                {
+                    lastException = ex;
+                }
+            }
+
+            if (lastException != null)
+            {
+                throw new Exception($"Translation failed after trying all models. Last error: {lastException.Message}", lastException);
+            }
         }
 
         private string GetSystemInstruction()
         {
-            return "You are a professional software localization system. Translate Visual C++ resource strings into the target language.\n" +
+            return "You are a professional software localization system specializing in CAD (Computer-Aided Design), BIM (Building Information Modeling), and engineering design software (similar to Autodesk AutoCAD, Revit, Inventor, Fusion 360).\n" +
                    "Strictly adhere to the following rules:\n" +
-                   "1. Keep any formatting placeholders (like %s, %d, %f, %1, %2, {0}, {1}, {2}) and escape characters (like \\n or \\t) exactly as they are in their correct syntactic positions.\n" +
-                   "2. Ensure the translation is accurate, natural, and uses standard software terminology for user interfaces in the target language.\n" +
-                   "3. Match the register and tone of the original English text (usually professional and concise).\n" +
-                   "4. Do not literally translate idioms or UI shortcuts (e.g., preserve shortcut keys like \\tF1 and translate only the label).\n" +
+                   "1. Use industry-standard professional terminology for CAD, engineering, and 3D modeling interfaces in the target language (e.g. translate 'Draft', 'Viewport', 'Extrude', 'Constraint', 'Assembly', 'Dimension Style', 'Render', 'Ribbon' using the exact standard terminology established by major CAD/BIM products like AutoCAD or Revit).\n" +
+                   "2. Ensure the translation is concise and space-efficient, suitable for narrow property panels, dialog boxes, sidebars, dockable windows, and command line bars common in Autodesk-like CAD interfaces.\n" +
+                   "3. Keep any formatting placeholders (like %s, %d, %f, %1, %2, {0}, {1}, {2}) and escape characters (like \\n or \\t) exactly as they are in their correct syntactic positions.\n" +
+                   "4. Do not literally translate idioms or UI shortcuts (e.g., preserve shortcut keys like \\tCtrl+Alt+P or \\tF1 and translate only the user-visible label portion).\n" +
                    "5. Output MUST be a valid JSON array of objects with keys 'key' and 'translated'. Do not add markdown blocks or wrapping code.";
         }
 
@@ -164,16 +191,16 @@ namespace Localizer_App.Services
 
         private string GetSystemInstruction()
         {
-            return "You are a strict, professional software localization QA system. Evaluate translation quality between English and the target language.\n" +
-                   "Assign a score (0 to 100) and status based on the following tight criteria:\n" +
-                   "- 'Excellent' (90-100): The translation is perfectly accurate, natural, uses standard software terminology, preserves all placeholders and escape characters, and has zero grammatical or formatting issues.\n" +
-                   "- 'Good' (80-89): Minor style or naturalness improvements are possible, but the meaning is correct, terminology is mostly standard, and all placeholders and escape characters are preserved.\n" +
+            return "You are a strict, professional software localization QA system specializing in CAD (Computer-Aided Design), BIM (Building Information Modeling), and engineering design software (similar to Autodesk products).\n" +
+                   "Evaluate translation quality between English and the target language, assigning a score (0 to 100) and status based on the following tight criteria:\n" +
+                   "- 'Excellent' (90-100): The translation is perfectly accurate, uses standard established CAD/engineering software terminology (matching Autodesk standard translations for UI terms like Viewport, Extrude, Assembly, Constraint, etc.), preserves all placeholders and escape characters, fits the tight space constraints of CAD sidebars/property grids, and has zero grammatical or formatting issues.\n" +
+                   "- 'Good' (80-89): Minor style or naturalness improvements are possible, but the engineering terminology is standard, meaning is correct, and all placeholders and escape characters are preserved.\n" +
                    "- 'Needs Review' (0-79): Any of the following issues MUST immediately result in a score below 80 and status 'Needs Review':\n" +
-                   "  1. Any placeholder mismatch, corruption, missing placeholder, or misplaced escape character.\n" +
-                   "  2. Mistranslations, loss of meaning, or incorrect context (e.g., translating a UI command literally when a standard localized UI term exists).\n" +
-                   "  3. Grammatical errors, spelling mistakes, or awkward phrasing in the target language.\n" +
-                   "  4. Truncation risks or excessively long translations compared to original UI space.\n\n" +
-                   "Provide detailed, accurate, and actionable feedback in the 'feedback' field specifying exactly what is wrong or could be improved (e.g., identifying a specific missing placeholder, translation error, or grammatical issue). If the translation is Excellent, explain why.\n" +
+                   "  1. Mistranslations, loss of engineering meaning, or incorrect CAD/BIM context (e.g., translating a standard command literally when a standard localized term in Autodesk exists, like translating 'Viewport' literally rather than using its standard CAD translation).\n" +
+                   "  2. Any placeholder mismatch, corruption, missing placeholder, or misplaced escape character.\n" +
+                   "  3. Truncation risks or excessively long translations compared to the limited UI space in property panels/dockable windows.\n" +
+                   "  4. Grammatical errors, spelling mistakes, or awkward phrasing in the target language.\n\n" +
+                   "Provide detailed, accurate, and actionable feedback in the 'feedback' field specifying exactly what is wrong or could be improved (e.g., identifying a specific non-standard CAD term, translation error, or grammatical issue). If the translation is Excellent, explain why.\n" +
                    "Output MUST be a valid JSON array of objects with keys 'key', 'score', 'status', and 'feedback'. Do not add markdown formatting or wrapper code.";
         }
 
