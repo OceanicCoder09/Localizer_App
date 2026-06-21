@@ -18,11 +18,27 @@ namespace Localizer_App.Services
 
         public async Task<string> CallApiAsync(string systemInstruction, string prompt, string apiKey, string model)
         {
-            string url = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + apiKey;
+            string mappedModel = MapModelToApiName(model);
+            string url = "https://generativelanguage.googleapis.com/v1beta/models/" + mappedModel + ":generateContent?key=" + apiKey;
             string requestJson = BuildRequestJson(systemInstruction, prompt);
             StringContent content = new StringContent(requestJson, Encoding.UTF8, "application/json");
             HttpResponseMessage response = await Client.PostAsync(url, content);
             return await ParseResponseAsync(response);
+        }
+
+        private string MapModelToApiName(string model)
+        {
+            if (string.IsNullOrEmpty(model)) return string.Empty;
+            string m = model.ToLower().Trim();
+            return m switch
+            {
+                "gemini-2-flash" => "gemini-2.0-flash",
+                "gemini-2-flash-lite" => "gemini-2.0-flash-lite",
+                "gemini-3-flash" => "gemini-3-flash-preview",
+                "gemini-3.1-pro" => "gemini-3.1-pro-preview",
+                "gemini-3-1-pro" => "gemini-3.1-pro-preview",
+                _ => model
+            };
         }
 
         private string BuildRequestJson(string systemInstruction, string prompt)
@@ -82,7 +98,19 @@ namespace Localizer_App.Services
             string prompt = GetPrompt(batch, languageName, languageCode);
             
             var modelsToTry = new List<string> { model };
-            foreach (var m in new[] { "gemini-3.5-flash", "gemini-2.5-flash", "gemini-1.5-flash" })
+            var fallbackOrder = new[] 
+            { 
+                "gemini-2.5-flash", 
+                "gemini-2-flash", 
+                "gemini-2.5-flash-lite", 
+                "gemini-2-flash-lite", 
+                "gemini-3.1-flash-lite", 
+                "gemini-3.5-flash", 
+                "gemini-3-flash", 
+                "gemini-2.5-pro", 
+                "gemini-3.1-pro" 
+            };
+            foreach (var m in fallbackOrder)
             {
                 if (!modelsToTry.Contains(m))
                 {
@@ -90,7 +118,7 @@ namespace Localizer_App.Services
                 }
             }
 
-            Exception? lastException = null;
+            var errors = new List<string>();
             foreach (var currentModel in modelsToTry)
             {
                 try
@@ -101,14 +129,12 @@ namespace Localizer_App.Services
                 }
                 catch (Exception ex)
                 {
-                    lastException = ex;
+                    errors.Add($"* {currentModel}: {ex.Message}");
                 }
             }
 
-            if (lastException != null)
-            {
-                throw new Exception($"Translation failed after trying all models. Last error: {lastException.Message}", lastException);
-            }
+            string detailedErrors = string.Join("\n", errors);
+            throw new Exception($"Translation failed after trying all models.\n\nErrors encountered:\n{detailedErrors}");
         }
 
         private string GetSystemInstruction()
@@ -185,8 +211,44 @@ namespace Localizer_App.Services
         {
             string systemInstruction = GetSystemInstruction();
             string prompt = GetPrompt(batch, languageName, languageCode);
-            string jsonResponse = await _geminiService.CallApiAsync(systemInstruction, prompt, apiKey, model);
-            return ParseResults(jsonResponse);
+
+            var modelsToTry = new List<string> { model };
+            var fallbackOrder = new[] 
+            { 
+                "gemini-2.5-flash", 
+                "gemini-2-flash", 
+                "gemini-2.5-flash-lite", 
+                "gemini-2-flash-lite", 
+                "gemini-3.1-flash-lite", 
+                "gemini-3.5-flash", 
+                "gemini-3-flash", 
+                "gemini-2.5-pro", 
+                "gemini-3.1-pro" 
+            };
+            foreach (var m in fallbackOrder)
+            {
+                if (!modelsToTry.Contains(m))
+                {
+                    modelsToTry.Add(m);
+                }
+            }
+
+            var errors = new List<string>();
+            foreach (var currentModel in modelsToTry)
+            {
+                try
+                {
+                    string jsonResponse = await _geminiService.CallApiAsync(systemInstruction, prompt, apiKey, currentModel);
+                    return ParseResults(jsonResponse);
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"* {currentModel}: {ex.Message}");
+                }
+            }
+
+            string detailedErrors = string.Join("\n", errors);
+            throw new Exception($"Validation failed after trying all models.\n\nErrors encountered:\n{detailedErrors}");
         }
 
         private string GetSystemInstruction()

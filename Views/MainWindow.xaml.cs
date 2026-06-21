@@ -48,9 +48,15 @@ namespace Localizer_App.Views
             TargetLanguages.Add(new TargetLanguage { Name = "French", CultureCode = "fr-FR" });
             TargetLanguages.Add(new TargetLanguage { Name = "German", CultureCode = "de-DE" });
             SelectedLanguage = TargetLanguages.First(x => x.CultureCode == "ja-JP");
-            AvailableModels.Add("gemini-3.5-flash");
             AvailableModels.Add("gemini-2.5-flash");
-            AvailableModels.Add("gemini-1.5-flash");
+            AvailableModels.Add("gemini-3.5-flash");
+            AvailableModels.Add("gemini-2-flash");
+            AvailableModels.Add("gemini-2-flash-lite");
+            AvailableModels.Add("gemini-2.5-flash-lite");
+            AvailableModels.Add("gemini-2.5-pro");
+            AvailableModels.Add("gemini-3-flash");
+            AvailableModels.Add("gemini-3.1-pro");
+            AvailableModels.Add("gemini-3.1-flash-lite");
             SelectedModel = AvailableModels.First();
         }
 
@@ -151,7 +157,13 @@ namespace Localizer_App.Views
 
         private async Task RunTranslationFlow()
         {
-            // Why: Direct string translation using cache memory lookup and API fallback.
+            // Why: Reload API key and run string translation using cache memory lookup and API fallback.
+            _apiKey = LoadApiKeyFromAppData();
+            if (string.IsNullOrEmpty(_apiKey) || _apiKey == "your_gemini_api_key_here")
+            {
+                throw new Exception($"Gemini API Key is missing or invalid. Please configure GEMINI_API_KEY in config.env:\n{GetApiKeyFilePath()}");
+            }
+
             var cache = _tmService.LoadMemory(SelectedLanguage.CultureCode);
             var misses = ResolveFromCache(cache);
             if (misses.Count > 0)
@@ -191,11 +203,17 @@ namespace Localizer_App.Views
 
         private void UpdateCacheAndSave(List<ResourceString> misses, Dictionary<string, CacheEntry> cache)
         {
-            // Why: Write translated outputs back to local cache dictionary and save file.
+            // Why: Write translated outputs back to local cache dictionary and save file, excluding Needs Review.
             foreach (var item in misses)
             {
                 if (!string.IsNullOrEmpty(item.Translated))
                 {
+                    if (item.ValidationStatus == "Needs Review" || (item.ValidationScore.HasValue && item.ValidationScore.Value < 80))
+                    {
+                        cache.Remove(item.Text);
+                        continue;
+                    }
+
                     if (!cache.TryGetValue(item.Text, out var entry))
                     {
                         entry = new CacheEntry();
@@ -223,7 +241,13 @@ namespace Localizer_App.Views
 
         private async Task RunValidationFlow()
         {
-            // Why: Run Gemini QA check and local format tests.
+            // Why: Reload API key and run Gemini QA check and local format tests.
+            _apiKey = LoadApiKeyFromAppData();
+            if (string.IsNullOrEmpty(_apiKey) || _apiKey == "your_gemini_api_key_here")
+            {
+                throw new Exception($"Gemini API Key is missing or invalid. Please configure GEMINI_API_KEY in config.env:\n{GetApiKeyFilePath()}");
+            }
+
             StatusMessage = "Running validations...";
 
             // Clear previous validations
@@ -263,22 +287,129 @@ namespace Localizer_App.Views
                 // Update cache with validation results
                 foreach (var res in geminiValidateList)
                 {
-                    if (!cache.TryGetValue(res.Text, out var entry))
+                    if (res.ValidationStatus == "Needs Review" || (res.ValidationScore.HasValue && res.ValidationScore.Value < 80))
                     {
-                        entry = new CacheEntry();
-                        cache[res.Text] = entry;
+                        cache.Remove(res.Text);
                     }
-                    entry.Translated = res.Translated;
-                    entry.ValidationScore = res.ValidationScore;
-                    entry.ValidationStatus = res.ValidationStatus;
-                    entry.ValidationFeedback = res.ValidationFeedback;
+                    else
+                    {
+                        if (!cache.TryGetValue(res.Text, out var entry))
+                        {
+                            entry = new CacheEntry();
+                            cache[res.Text] = entry;
+                        }
+                        entry.Translated = res.Translated;
+                        entry.ValidationScore = res.ValidationScore;
+                        entry.ValidationStatus = res.ValidationStatus;
+                        entry.ValidationFeedback = res.ValidationFeedback;
+                    }
                 }
-                _tmService.SaveMemory(SelectedLanguage.CultureCode, cache);
             }
+
+            // Double-check sweep: remove any Needs Review entries from TM cache
+            foreach (var res in ResourceStrings)
+            {
+                if (res.ValidationStatus == "Needs Review" || (res.ValidationScore.HasValue && res.ValidationScore.Value < 80))
+                {
+                    cache.Remove(res.Text);
+                }
+            }
+
+            _tmService.SaveMemory(SelectedLanguage.CultureCode, cache);
 
             RunLocalValidation();
             RecalculateAndSaveStats();
             ShowValidationPanel();
+        }
+
+        public async void OnRetryTranslationClick(object sender, RoutedEventArgs e)
+        {
+            // Why: Click handler for the row-level Retry button, triggered for Needs Review strings.
+            if (sender is Button button && button.DataContext is ResourceString resourceString)
+            {
+                await RetryTranslationAndValidationAsync(resourceString);
+            }
+        }
+
+        private async Task RetryTranslationAndValidationAsync(ResourceString item)
+        {
+            // Why: Retranslates and re-validates a specific low-scoring / Needs Review translation.
+            try
+            {
+                IsLoading = true;
+                StatusMessage = $"Retrying translation for key: {item.Key}...";
+                
+                // Clear previous validation and translation states to show progress
+                item.Translated = string.Empty;
+                item.ValidationScore = null;
+                item.ValidationStatus = null;
+                item.ValidationFeedback = null;
+
+                // 1. Call translation service for this single item
+                var singleList = new List<ResourceString> { item };
+                _apiKey = LoadApiKeyFromAppData();
+                if (string.IsNullOrEmpty(_apiKey) || _apiKey == "your_gemini_api_key_here")
+                {
+                    throw new Exception($"Gemini API Key is missing or invalid. Please configure GEMINI_API_KEY in config.env:\n{GetApiKeyFilePath()}");
+                }
+
+                await _translationService.TranslateAsync(singleList, SelectedLanguage.Name, SelectedLanguage.CultureCode, _apiKey, SelectedModel);
+
+                if (string.IsNullOrEmpty(item.Translated))
+                {
+                    throw new Exception("Translation service returned empty result.");
+                }
+
+                // 2. Call validation service for this single item
+                StatusMessage = $"Validating retried translation for key: {item.Key}...";
+                var qaResults = await _aiValidationService.ValidateAsync(singleList, SelectedLanguage.Name, SelectedLanguage.CultureCode, _apiKey, SelectedModel);
+                
+                // Map the QA results to the item
+                var match = qaResults.FirstOrDefault(q => q.Key == item.Key);
+                if (match != null)
+                {
+                    item.ValidationScore = match.Score;
+                    item.ValidationStatus = match.Status;
+                    item.ValidationFeedback = match.Feedback;
+                }
+
+                // 3. Perform local validation on the updated list
+                RunLocalValidation();
+
+                // 4. Update Translation Memory Cache
+                var cache = _tmService.LoadMemory(SelectedLanguage.CultureCode);
+                if (item.ValidationStatus == "Needs Review" || (item.ValidationScore.HasValue && item.ValidationScore.Value < 80))
+                {
+                    cache.Remove(item.Text);
+                    StatusMessage = $"Translation updated for {item.Key}, but still needs review. Not saved to cache.";
+                }
+                else
+                {
+                    if (!cache.TryGetValue(item.Text, out var entry))
+                    {
+                        entry = new CacheEntry();
+                        cache[item.Text] = entry;
+                    }
+                    entry.Translated = item.Translated;
+                    entry.ValidationScore = item.ValidationScore;
+                    entry.ValidationStatus = item.ValidationStatus;
+                    entry.ValidationFeedback = item.ValidationFeedback;
+                    StatusMessage = $"Successfully retried, validated, and saved translation for key: {item.Key}";
+                }
+                _tmService.SaveMemory(SelectedLanguage.CultureCode, cache);
+
+                // 5. Recalculate stats
+                RecalculateAndSaveStats();
+            }
+            catch (Exception ex)
+            {
+                ShowError($"Retry failed: {ex.Message}");
+            }
+            finally
+            {
+                IsLoading = false;
+                RefreshGrid();
+            }
         }
 
         private void MapQaResultsOnly(List<ValidationOutputItem> qaResults)
