@@ -12,9 +12,14 @@ namespace Localizer_App.Services
     // =========================================================================
     // 1. Gemini Client Service (Low-Level Network Handler)
     // =========================================================================
+    public class FatalGeminiException : Exception
+    {
+        public FatalGeminiException(string message) : base(message) { }
+    }
+
     public class GeminiService
     {
-        private static readonly HttpClient Client = new HttpClient();
+        private static readonly HttpClient Client = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
 
         public async Task<string> CallApiAsync(string systemInstruction, string prompt, string apiKey, string model)
         {
@@ -57,6 +62,11 @@ namespace Localizer_App.Services
             if (!response.IsSuccessStatusCode)
             {
                 string error = await response.Content.ReadAsStringAsync();
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized || 
+                    response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                {
+                    throw new FatalGeminiException("Gemini API authentication/authorization error (" + response.StatusCode + "): " + error);
+                }
                 throw new Exception("Gemini API error (" + response.StatusCode + "): " + error);
             }
             string json = await response.Content.ReadAsStringAsync();
@@ -72,6 +82,54 @@ namespace Localizer_App.Services
                 JsonElement part = candidates[0].GetProperty("content").GetProperty("parts")[0];
                 return part.GetProperty("text").GetString() ?? string.Empty;
             }
+        }
+
+        public static string CleanJson(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+
+            int firstBracket = input.IndexOf('[');
+            int lastBracket = input.LastIndexOf(']');
+
+            if (firstBracket != -1 && lastBracket != -1 && lastBracket > firstBracket)
+            {
+                return input.Substring(firstBracket, lastBracket - firstBracket + 1);
+            }
+
+            // Fallback trimming
+            string trimmed = input.Trim();
+            if (trimmed.StartsWith("```json", StringComparison.OrdinalIgnoreCase))
+            {
+                trimmed = trimmed.Substring(7).Trim();
+            }
+            else if (trimmed.StartsWith("```"))
+            {
+                trimmed = trimmed.Substring(3).Trim();
+            }
+
+            if (trimmed.EndsWith("```"))
+            {
+                trimmed = trimmed.Substring(0, trimmed.Length - 3).Trim();
+            }
+
+            return trimmed;
+        }
+
+        public static bool IsFatalException(Exception ex)
+        {
+            Exception? current = ex;
+            while (current != null)
+            {
+                if (current is FatalGeminiException || 
+                    current is HttpRequestException || 
+                    current is TaskCanceledException || 
+                    current is OperationCanceledException)
+                {
+                    return true;
+                }
+                current = current.InnerException;
+            }
+            return false;
         }
     }
 
@@ -94,8 +152,8 @@ namespace Localizer_App.Services
 
         private async Task TranslateBatchAsync(List<ResourceString> batch, string languageName, string languageCode, string apiKey, string model)
         {
-            string systemInstruction = GetSystemInstruction();
-            string prompt = GetPrompt(batch, languageName, languageCode);
+            string systemInstruction = GetSystemInstruction(languageName, languageCode);
+            string prompt = GetPrompt(batch);
             
             var modelsToTry = new List<string> { model };
             var fallbackOrder = new[] 
@@ -130,6 +188,10 @@ namespace Localizer_App.Services
                 catch (Exception ex)
                 {
                     errors.Add($"* {currentModel}: {ex.Message}");
+                    if (GeminiService.IsFatalException(ex))
+                    {
+                        throw; // Early abort on network / timeout / auth errors
+                    }
                 }
             }
 
@@ -137,32 +199,83 @@ namespace Localizer_App.Services
             throw new Exception($"Translation failed after trying all models.\n\nErrors encountered:\n{detailedErrors}");
         }
 
-        private string GetSystemInstruction()
+        private string GetSystemInstruction(string languageName, string languageCode)
         {
-            return "You are a professional software localization system specializing in CAD (Computer-Aided Design), BIM (Building Information Modeling), and engineering design software (similar to Autodesk AutoCAD, Revit, Inventor, Fusion 360).\n" +
+            return $"You are a professional software localization system specializing in CAD (Computer-Aided Design), BIM (Building Information Modeling), and engineering design software (similar to Autodesk AutoCAD, Revit, Inventor, Fusion 360).\n" +
+                   $"Translate the provided JSON input to {languageName} ({languageCode}).\n" +
                    "Strictly adhere to the following rules:\n" +
-                   "1. Use industry-standard professional terminology for CAD, engineering, and 3D modeling interfaces in the target language (e.g. translate 'Draft', 'Viewport', 'Extrude', 'Constraint', 'Assembly', 'Dimension Style', 'Render', 'Ribbon' using the exact standard terminology established by major CAD/BIM products like AutoCAD or Revit).\n" +
-                   "2. Ensure the translation is concise and space-efficient, suitable for narrow property panels, dialog boxes, sidebars, dockable windows, and command line bars common in Autodesk-like CAD interfaces.\n" +
-                   "3. Keep any formatting placeholders (like %s, %d, %f, %1, %2, {0}, {1}, {2}) and escape characters (like \\n or \\t) exactly as they are in their correct syntactic positions.\n" +
-                   "4. Do not literally translate idioms or UI shortcuts (e.g., preserve shortcut keys like \\tCtrl+Alt+P or \\tF1 and translate only the user-visible label portion).\n" +
-                   "5. Output MUST be a valid JSON array of objects with keys 'key' and 'translated'. Do not add markdown blocks or wrapping code.";
+                   "1. CONTEXT SEGMENTS: Split every key name by underscore \"_\" and read each segment as a modifier/context:\n" +
+                   "   - FILL, COLOR, STYLE -> visual property (may need adjective form)\n" +
+                   "   - EDGE, FACE, BODY -> geometric/structural element (may need noun form)\n" +
+                   "   - VP, VIEWPORT -> scoped to active viewport only, not global\n" +
+                   "   - ALL, GLOBAL -> applies to everything, not scoped\n" +
+                   "   - LAYER, OBJECT, BLOCK -> scoped to that specific entity type\n" +
+                   "   - CON, CONSTRAINT -> a rule or relationship, not a button label\n" +
+                   "   - SNAP, TRACK -> cursor behavior shown as tooltip\n" +
+                   "   - DEF, DEFINITION -> a template or blueprint, not an instance\n" +
+                   "   - REF, REFERENCE -> an instance pointing to something defined elsewhere\n" +
+                   "   - CMD, COMMAND -> a software command name identifier\n" +
+                   "   - ERR, ERROR -> error message shown after something failed\n" +
+                   "   - WARN, WARNING -> warning shown before something might fail\n" +
+                   "   - PROMPT -> a question or instruction asked to user mid-command\n" +
+                   "   - INFO, STATUS -> passive status message shown to user\n" +
+                   "   - LABEL, TITLE -> heading or field label inside a dialog\n" +
+                   "   - BTN, BUTTON -> clickable button (must be short)\n" +
+                   "   - TIP, TOOLTIP -> hover text (can be slightly longer)\n" +
+                   "   - MSG -> general message to user\n" +
+                   "   - CURRENT -> applies to active/selected item only\n" +
+                   "   - NEW -> creating something new\n" +
+                   "   - DELETE, REMOVE -> destructive action\n" +
+                   "   - CONFIRM -> confirmation dialog text\n" +
+                   "2. CONTEXT BEFORE VALUE (CRITICAL): Same English value under different keys = potentially different translations. Verify whether the target language uses the same word for both contexts. Never copy a translation from one key to another just because English is identical.\n" +
+                   "   - CRITICAL DIFFERENCE RULES:\n" +
+                   "     * 'Solid' under IDS_SOLID -> translate as a generic adjective (e.g. ठोस / ソリッド).\n" +
+                   "     * 'Solid' under IDS_SOLID_FILL -> translate as a solid pattern/fill (e.g. ठोस भरा हुआ / ソリッド塗りつぶし).\n" +
+                   "     * 'Solid' under IDS_SOLID_EDGE -> translate as a continuous solid geometry edge/line (e.g. ठोस किनारा / 実線 or ソリッドエッジ).\n" +
+                   "     * 'Freeze' under IDS_FREEZE -> translate as generic action (e.g. फ़्रीज़ करें / フリーズ).\n" +
+                   "     * 'Freeze' under IDS_FREEZE_VP -> translate with active viewport scope (e.g. व्यूपोर्ट में फ़्रीज़ करें / ビューポートでフリーズ).\n" +
+                   "     * 'Lock' under IDS_LOCK -> translate as generic action (e.g. लॉक करें / ロック).\n" +
+                   "     * 'Lock' under IDS_LOCK_LAYER -> translate with layer scope (e.g. लेयर लॉक करें / レイヤーロック).\n" +
+                   "     * 'Offset' under IDS_OFFSET -> translate as generic CAD command (e.g. ऑफ़सेट / オフセット).\n" +
+                   "     * 'Offset' under IDS_OFFSET_FACE -> translate with face geometry scope (e.g. फलक ऑफ़सेट / 面オフセット).\n" +
+                   "3. FEEDBACK-DRIVEN CORRECTION: If a JSON object contains `previous_translation` and `feedback`, it means the translation was flagged as incorrect or low-scoring by a QA validator. Use the provided feedback strictly to correct the translation and return the improved, correct version in the output.\n" +
+                   "4. PLACEHOLDERS: Preserve %1, %2, %s, %d, {0}, {1}, $(VAR), and similar patterns exactly as-is. Translate only the surrounding natural language. Reorder them only if target language grammar requires it.\n" +
+                   "5. FORMATTING: Preserve trailing ': ', trailing '...', [Option1/Option2] brackets (translate inside words), <Default> angle brackets (translate inside words), and leading/trailing spaces. Do not alter punctuation.\n" +
+                   "6. COMMAND NAMES: Single-word ALL CAPS or CamelCase technical identifiers representing command names (e.g. REGEN, XREF, OVERKILL) should NOT be translated unless official localized version exists.\n" +
+                   "7. UI LENGTH & TONE AWARENESS:\n" +
+                   "   - Short strings under 20 chars are UI labels with limited space. Use concise standard form in target language. Do not add explanatory words.\n" +
+                   "   - Tones: _ERR/_ERROR must sound firm/specific; _WARN/_WARNING must sound cautionary; _PROMPT must read as instruction/question; _STATUS/_INFO must read as neutral passive statement; _BTN/_BUTTON must read as action verb or short noun.\n" +
+                   "Output MUST be a valid JSON array of objects with keys 'key' and 'translated'. Do not add markdown formatting or wrapper code.";
         }
 
-        private string GetPrompt(List<ResourceString> batch, string languageName, string languageCode)
+        private string GetPrompt(List<ResourceString> batch)
         {
             var inputs = new List<object>();
             foreach (var item in batch)
             {
-                inputs.Add(new { key = item.Key, text = item.Text });
+                if (!string.IsNullOrEmpty(item.Translated) && !string.IsNullOrEmpty(item.ValidationFeedback))
+                {
+                    inputs.Add(new
+                    {
+                        key = item.Key,
+                        text = item.Text,
+                        previous_translation = item.Translated,
+                        feedback = item.ValidationFeedback
+                    });
+                }
+                else
+                {
+                    inputs.Add(new { key = item.Key, text = item.Text });
+                }
             }
-            string serialized = JsonSerializer.Serialize(inputs);
-            return "Translate to " + languageName + " (" + languageCode + ").\n\nInput JSON:\n" + serialized;
+            return JsonSerializer.Serialize(inputs);
         }
 
         private void UpdateTranslations(List<ResourceString> batch, string jsonResponse)
         {
+            string cleaned = GeminiService.CleanJson(jsonResponse);
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var outputs = JsonSerializer.Deserialize<List<TranslationOutput>>(jsonResponse, options);
+            var outputs = JsonSerializer.Deserialize<List<TranslationOutput>>(cleaned, options);
             if (outputs == null) return;
             
             foreach (var item in batch)
@@ -209,8 +322,8 @@ namespace Localizer_App.Services
 
         private async Task<List<ValidationOutputItem>> ValidateBatchAsync(List<ResourceString> batch, string languageName, string languageCode, string apiKey, string model)
         {
-            string systemInstruction = GetSystemInstruction();
-            string prompt = GetPrompt(batch, languageName, languageCode);
+            string systemInstruction = GetSystemInstruction(languageName, languageCode);
+            string prompt = GetPrompt(batch);
 
             var modelsToTry = new List<string> { model };
             var fallbackOrder = new[] 
@@ -244,6 +357,10 @@ namespace Localizer_App.Services
                 catch (Exception ex)
                 {
                     errors.Add($"* {currentModel}: {ex.Message}");
+                    if (GeminiService.IsFatalException(ex))
+                    {
+                        throw; // Early abort on network / timeout / auth errors
+                    }
                 }
             }
 
@@ -251,36 +368,39 @@ namespace Localizer_App.Services
             throw new Exception($"Validation failed after trying all models.\n\nErrors encountered:\n{detailedErrors}");
         }
 
-        private string GetSystemInstruction()
+        private string GetSystemInstruction(string languageName, string languageCode)
         {
-            return "You are a strict, professional software localization QA system specializing in CAD (Computer-Aided Design), BIM (Building Information Modeling), and engineering design software (similar to Autodesk products).\n" +
-                   "Evaluate translation quality between English and the target language, assigning a score (0 to 100) and status based on the following tight criteria:\n" +
-                   "- 'Excellent' (90-100): The translation is perfectly accurate, uses standard established CAD/engineering software terminology (matching Autodesk standard translations for UI terms like Viewport, Extrude, Assembly, Constraint, etc.), preserves all placeholders and escape characters, fits the tight space constraints of CAD sidebars/property grids, and has zero grammatical or formatting issues.\n" +
-                   "- 'Good' (80-89): Minor style or naturalness improvements are possible, but the engineering terminology is standard, meaning is correct, and all placeholders and escape characters are preserved.\n" +
-                   "- 'Needs Review' (0-79): Any of the following issues MUST immediately result in a score below 80 and status 'Needs Review':\n" +
-                   "  1. Mistranslations, loss of engineering meaning, or incorrect CAD/BIM context (e.g., translating a standard command literally when a standard localized term in Autodesk exists, like translating 'Viewport' literally rather than using its standard CAD translation).\n" +
-                   "  2. Any placeholder mismatch, corruption, missing placeholder, or misplaced escape character.\n" +
-                   "  3. Truncation risks or excessively long translations compared to the limited UI space in property panels/dockable windows.\n" +
-                   "  4. Grammatical errors, spelling mistakes, or awkward phrasing in the target language.\n\n" +
-                   "Provide detailed, accurate, and actionable feedback in the 'feedback' field specifying exactly what is wrong or could be improved (e.g., identifying a specific non-standard CAD term, translation error, or grammatical issue). If the translation is Excellent, explain why.\n" +
+            return $"You are a strict, professional software localization QA system specializing in CAD (Computer-Aided Design), BIM (Building Information Modeling), and engineering design software.\n" +
+                   $"Evaluate translation quality from English to {languageName} ({languageCode}) for the provided JSON input, assigning a score (0 to 100) and status based on these strict checks. Assign 'status' as 'Excellent' (90-100), 'Good' (80-89), or 'Needs Review' (0-79).\n\n" +
+                   "Run the following 9 Validation Checks:\n" +
+                   "1. CHECK 1 — PLACEHOLDER INTEGRITY (CRITICAL): Verify all placeholders like %1, %2, %s, %d, {0}, {1}, $(VAR) in original are exactly intact in translation (not converted to literal, omitted, or duplicated). Failure: Score 0-50, status 'Needs Review'.\n" +
+                   "2. CHECK 2 — FORMATTING CHARACTER INTEGRITY (CRITICAL/MINOR): Verify trailing ': ', trailing '...', [Bracket] structure/content, <Angle bracket> structure/content, and spaces. Brackets failure: CRITICAL (Score 0-50). Spacing/punctuation: MINOR (Score 70-79), status 'Needs Review'.\n" +
+                   "3. CHECK 3 — KEY NAME VS TRANSLATION CONTEXT MISMATCH (MAJOR/MINOR): Split key by underscore. Verify translation matches context (e.g. _ERR must have error tone, _WARN cautionary tone, _PROMPT instruction/question, _BTN < 25 chars, _TOOLTIP informative, _VP/_VIEWPORT scoped to current viewport, _ALL/_GLOBAL global scope, _CURRENT selected item scope, _DEF template definition, _REF reference pointer). Failure: MAJOR for scope/tone mismatch (Score 50-70), MINOR for role mismatch (Score 70-79), status 'Needs Review'.\n" +
+                   "4. CHECK 4 — DUPLICATE TRANSLATION ACROSS DIFFERENT KEYS (MAJOR): Flag if two keys share the same translation but key names imply different contexts (e.g. geometric constraint vs button label). Failure: Score 50-70, status 'Needs Review'.\n" +
+                   "5. CHECK 5 — UNTRANSLATED SEGMENTS (MAJOR): Flag if English segments remain untranslated (unless recognized command names or proper nouns). Failure: Score 50-70, status 'Needs Review'.\n" +
+                   "6. CHECK 6 — OVER-TRANSLATION (MINOR): Flag if translation adds words, explanations, or context not present in original. Failure: Score 70-79, status 'Needs Review'.\n" +
+                   "7. CHECK 7 — LENGTH VIOLATION (MINOR): Flag if original is < 25 chars and translation is > 2.5x original character count. Failure: Score 70-79, status 'Needs Review'.\n" +
+                   "8. CHECK 8 — IDENTICAL FEEDBACK ACROSS KEYS (MINOR): Ensure distinct feedback reasoning for each key in batch. Flag if identical. Failure: Score 70-79, status 'Needs Review'.\n" +
+                   "9. CHECK 9 — SCOPE SUFFIX IGNORED (MAJOR): Flag if scope modifier (_VP, _ALL, _GLOBAL, _CURRENT, _LAYER etc.) is absent from target semantics. Failure: Score 50-70, status 'Needs Review'.\n\n" +
+                   "Provide detailed, unique, and actionable feedback in the 'feedback' field specifying exactly what check failed and how to fix it. If the translation passes all checks, set status to Excellent/Good and explain why.\n" +
                    "Output MUST be a valid JSON array of objects with keys 'key', 'score', 'status', and 'feedback'. Do not add markdown formatting or wrapper code.";
         }
 
-        private string GetPrompt(List<ResourceString> batch, string languageName, string languageCode)
+        private string GetPrompt(List<ResourceString> batch)
         {
             var inputs = new List<object>();
             foreach (var item in batch)
             {
                 inputs.Add(new { key = item.Key, source = item.Text, translation = item.Translated });
             }
-            string serialized = JsonSerializer.Serialize(inputs);
-            return "Validate translations to " + languageName + " (" + languageCode + ").\n\nInput JSON:\n" + serialized;
+            return JsonSerializer.Serialize(inputs);
         }
 
         private List<ValidationOutputItem> ParseResults(string jsonResponse)
         {
+            string cleaned = GeminiService.CleanJson(jsonResponse);
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var list = JsonSerializer.Deserialize<List<ValidationOutputItem>>(jsonResponse, options);
+            var list = JsonSerializer.Deserialize<List<ValidationOutputItem>>(cleaned, options);
             return list ?? new List<ValidationOutputItem>();
         }
     }

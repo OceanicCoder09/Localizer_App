@@ -413,11 +413,11 @@
                     </StackPanel>
                 </StackPanel>
 
-                <!-- Right Columns: Operations -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
-                    <Button Style="{StaticResource ModernButton}" Click="OnExtractStringsClick" IsEnabled="{Binding IsFileSelected}" Content="Extract Strings" Margin="0,0,10,0" Width="130"/>
-                    <Button Style="{StaticResource AccentButton}" Click="OnTranslateClick" IsEnabled="{Binding IsFileSelected}" Content="Translate " Margin="0,0,10,0" Width="150"/>
-                    <Button Style="{StaticResource ModernButton}" Click="OnValidateClick" IsEnabled="{Binding IsFileSelected}" Content="Validate " Width="150"/>
+                    <Button Style="{StaticResource ModernButton}" Click="OnExtractStringsClick" IsEnabled="{Binding CanExtract}" Content="Extract Strings" Margin="0,0,10,0" Width="130"/>
+                    <Button Style="{StaticResource AccentButton}" Click="OnTranslateClick" IsEnabled="{Binding CanTranslate}" Content="Translate" Margin="0,0,10,0" Width="150"/>
+                    <Button Style="{StaticResource ModernButton}" Click="OnValidateClick" IsEnabled="{Binding CanValidate}" Content="Validate" Margin="0,0,10,0" Width="150"/>
+                    <Button Style="{StaticResource ModernButton}" Click="OnRetryAllReviewsClick" IsEnabled="{Binding CanRetryReviews}" Content="Retry Reviews" Width="130" Background="#E11D48"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -698,10 +698,10 @@
                            Foreground="#64748B" FontSize="11" VerticalAlignment="Center" TextWrapping="Wrap"/>
                 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Style="{StaticResource ModernButton}" Click="OnOpenPreviewClick" Content="Open Preview Window" Margin="0,0,10,0" Width="160"
+                    <Button Style="{StaticResource ModernButton}" Click="OnOpenPreviewClick" IsEnabled="{Binding CanValidate}" Content="Open Preview Window" Margin="0,0,10,0" Width="160"
                             ToolTip="Simulate a localized desktop UI using RC resource files"/>
-                    <Button Style="{StaticResource ModernButton}" Click="OnGenerateRcClick" IsEnabled="{Binding IsFileSelected}" Content="Generate Localized RC" Margin="0,0,10,0" Width="180"/>
-                    <Button Style="{StaticResource AccentButton}" Click="OnSaveRcClick" IsEnabled="{Binding IsRcGenerated}" Content="Save Localized RC..." Width="180"/>
+                    <Button Style="{StaticResource ModernButton}" Click="OnGenerateRcClick" IsEnabled="{Binding CanGenerate}" Content="Generate Localized RC" Margin="0,0,10,0" Width="180"/>
+                    <Button Style="{StaticResource AccentButton}" Click="OnSaveRcClick" IsEnabled="{Binding CanSave}" Content="Save Localized RC..." Width="180"/>
                 </StackPanel>
             </Grid>
         </Border>

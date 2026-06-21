@@ -119,7 +119,7 @@ namespace Localizer_App.Views
                 var cache = tmService.LoadMemory(cultureCode);
                 foreach (var item in _inMemoryStrings)
                 {
-                    if (cache.TryGetValue(item.Text, out var entry) && !string.IsNullOrEmpty(entry.Translated))
+                    if (cache.TryGetValue(item.Key, out var entry) && !string.IsNullOrEmpty(entry.Translated))
                     {
                         _resources[item.Key] = entry.Translated;
                     }

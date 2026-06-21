@@ -108,7 +108,12 @@ namespace Localizer_App.Views
             {
                 SelectedFilePath = openFileDialog.FileName;
                 ResourceStrings.Clear();
+                IsExtracted = false;
+                IsTranslated = false;
+                IsAiValidationRun = false;
+                GeneratedRcContent = string.Empty;
                 ValidationPanel.Visibility = Visibility.Collapsed;
+                NotifyStateChanges();
             }
         }
 
@@ -132,6 +137,11 @@ namespace Localizer_App.Views
             ResourceStrings.Clear();
             foreach (var str in parsed) ResourceStrings.Add(str);
             StatusMessage = "Extracted " + ResourceStrings.Count + " strings. Ready.";
+            IsExtracted = true;
+            IsTranslated = false;
+            IsAiValidationRun = false;
+            GeneratedRcContent = string.Empty;
+            NotifyStateChanges();
         }
 
         private async void OnTranslateClick(object sender, RoutedEventArgs e)
@@ -173,7 +183,13 @@ namespace Localizer_App.Views
                 UpdateCacheAndSave(misses, cache);
             }
             else StatusMessage = "All translations loaded from cache.";
+
+            IsTranslated = true;
+            IsAiValidationRun = false;
+            GeneratedRcContent = string.Empty;
+
             RefreshGrid();
+            NotifyStateChanges();
         }
 
         private List<ResourceString> ResolveFromCache(Dictionary<string, CacheEntry> cache)
@@ -190,7 +206,7 @@ namespace Localizer_App.Views
         private void CheckCacheItem(ResourceString item, Dictionary<string, CacheEntry> cache, List<ResourceString> misses)
         {
             // Why: Resolve single string item from translation memory or mark as miss.
-            if (cache.TryGetValue(item.Text, out CacheEntry? entry))
+            if (cache.TryGetValue(item.Key, out CacheEntry? entry))
             {
                 item.Translated = entry.Translated;
                 item.ValidationScore = entry.ValidationScore;
@@ -210,14 +226,14 @@ namespace Localizer_App.Views
                 {
                     if (item.ValidationStatus == "Needs Review" || (item.ValidationScore.HasValue && item.ValidationScore.Value < 80))
                     {
-                        cache.Remove(item.Text);
+                        cache.Remove(item.Key);
                         continue;
                     }
 
-                    if (!cache.TryGetValue(item.Text, out var entry))
+                    if (!cache.TryGetValue(item.Key, out var entry))
                     {
                         entry = new CacheEntry();
-                        cache[item.Text] = entry;
+                        cache[item.Key] = entry;
                     }
                     entry.Translated = item.Translated;
                 }
@@ -264,7 +280,7 @@ namespace Localizer_App.Views
 
             foreach (var res in list)
             {
-                if (cache.TryGetValue(res.Text, out var entry) && 
+                if (cache.TryGetValue(res.Key, out var entry) && 
                     res.Translated == entry.Translated && 
                     entry.ValidationScore.HasValue && 
                     !string.IsNullOrEmpty(entry.ValidationStatus))
@@ -289,14 +305,14 @@ namespace Localizer_App.Views
                 {
                     if (res.ValidationStatus == "Needs Review" || (res.ValidationScore.HasValue && res.ValidationScore.Value < 80))
                     {
-                        cache.Remove(res.Text);
+                        cache.Remove(res.Key);
                     }
                     else
                     {
-                        if (!cache.TryGetValue(res.Text, out var entry))
+                        if (!cache.TryGetValue(res.Key, out var entry))
                         {
                             entry = new CacheEntry();
-                            cache[res.Text] = entry;
+                            cache[res.Key] = entry;
                         }
                         entry.Translated = res.Translated;
                         entry.ValidationScore = res.ValidationScore;
@@ -311,7 +327,7 @@ namespace Localizer_App.Views
             {
                 if (res.ValidationStatus == "Needs Review" || (res.ValidationScore.HasValue && res.ValidationScore.Value < 80))
                 {
-                    cache.Remove(res.Text);
+                    cache.Remove(res.Key);
                 }
             }
 
@@ -320,6 +336,21 @@ namespace Localizer_App.Views
             RunLocalValidation();
             RecalculateAndSaveStats();
             ShowValidationPanel();
+            IsAiValidationRun = true;
+            GeneratedRcContent = string.Empty;
+            NotifyStateChanges();
+        }
+
+        public async void OnRetryAllReviewsClick(object sender, RoutedEventArgs e)
+        {
+            // Why: Click handler for the batch Retry Reviews button.
+            var reviewItems = ResourceStrings.Where(r => r.ValidationStatus == "Needs Review" || (r.ValidationScore.HasValue && r.ValidationScore.Value < 80)).ToList();
+            if (reviewItems.Count == 0)
+            {
+                MessageBox.Show("No items need review.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            await ExecuteTaskAsync(() => RetryTranslationAndValidationBatchAsync(reviewItems));
         }
 
         public async void OnRetryTranslationClick(object sender, RoutedEventArgs e)
@@ -327,44 +358,42 @@ namespace Localizer_App.Views
             // Why: Click handler for the row-level Retry button, triggered for Needs Review strings.
             if (sender is Button button && button.DataContext is ResourceString resourceString)
             {
-                await RetryTranslationAndValidationAsync(resourceString);
+                await ExecuteTaskAsync(() => RetryTranslationAndValidationBatchAsync(new List<ResourceString> { resourceString }));
             }
         }
 
-        private async Task RetryTranslationAndValidationAsync(ResourceString item)
+        private async Task RetryTranslationAndValidationBatchAsync(List<ResourceString> items)
         {
-            // Why: Retranslates and re-validates a specific low-scoring / Needs Review translation.
-            try
+            // Why: Retranslates and re-validates a batch of low-scoring / Needs Review translations.
+            if (items == null || items.Count == 0) return;
+            
+            StatusMessage = $"Retrying translation for {items.Count} reviews...";
+            
+            // 1. Call translation service. Note: we do NOT clear item.Translated or ValidationFeedback
+            // so they are sent to Gemini as previous_translation and feedback respectively.
+            _apiKey = LoadApiKeyFromAppData();
+            if (string.IsNullOrEmpty(_apiKey) || _apiKey == "your_gemini_api_key_here")
             {
-                IsLoading = true;
-                StatusMessage = $"Retrying translation for key: {item.Key}...";
-                
-                // Clear previous validation and translation states to show progress
-                item.Translated = string.Empty;
+                throw new Exception($"Gemini API Key is missing or invalid. Please configure GEMINI_API_KEY in config.env:\n{GetApiKeyFilePath()}");
+            }
+
+            await _translationService.TranslateAsync(items, SelectedLanguage.Name, SelectedLanguage.CultureCode, _apiKey, SelectedModel);
+
+            // 2. Clear old validation fields before validating the new translations.
+            foreach (var item in items)
+            {
                 item.ValidationScore = null;
                 item.ValidationStatus = null;
                 item.ValidationFeedback = null;
+            }
 
-                // 1. Call translation service for this single item
-                var singleList = new List<ResourceString> { item };
-                _apiKey = LoadApiKeyFromAppData();
-                if (string.IsNullOrEmpty(_apiKey) || _apiKey == "your_gemini_api_key_here")
-                {
-                    throw new Exception($"Gemini API Key is missing or invalid. Please configure GEMINI_API_KEY in config.env:\n{GetApiKeyFilePath()}");
-                }
-
-                await _translationService.TranslateAsync(singleList, SelectedLanguage.Name, SelectedLanguage.CultureCode, _apiKey, SelectedModel);
-
-                if (string.IsNullOrEmpty(item.Translated))
-                {
-                    throw new Exception("Translation service returned empty result.");
-                }
-
-                // 2. Call validation service for this single item
-                StatusMessage = $"Validating retried translation for key: {item.Key}...";
-                var qaResults = await _aiValidationService.ValidateAsync(singleList, SelectedLanguage.Name, SelectedLanguage.CultureCode, _apiKey, SelectedModel);
-                
-                // Map the QA results to the item
+            // 3. Call validation service for all retried items in batch.
+            StatusMessage = $"Validating {items.Count} retried items...";
+            var qaResults = await _aiValidationService.ValidateAsync(items, SelectedLanguage.Name, SelectedLanguage.CultureCode, _apiKey, SelectedModel);
+            
+            // Map the QA results to the items.
+            foreach (var item in items)
+            {
                 var match = qaResults.FirstOrDefault(q => q.Key == item.Key);
                 if (match != null)
                 {
@@ -372,44 +401,42 @@ namespace Localizer_App.Views
                     item.ValidationStatus = match.Status;
                     item.ValidationFeedback = match.Feedback;
                 }
+            }
 
-                // 3. Perform local validation on the updated list
-                RunLocalValidation();
+            // 4. Perform local validation on the updated list.
+            RunLocalValidation();
 
-                // 4. Update Translation Memory Cache
-                var cache = _tmService.LoadMemory(SelectedLanguage.CultureCode);
+            // 5. Update Translation Memory Cache.
+            var cache = _tmService.LoadMemory(SelectedLanguage.CultureCode);
+            foreach (var item in items)
+            {
                 if (item.ValidationStatus == "Needs Review" || (item.ValidationScore.HasValue && item.ValidationScore.Value < 80))
                 {
-                    cache.Remove(item.Text);
-                    StatusMessage = $"Translation updated for {item.Key}, but still needs review. Not saved to cache.";
+                    cache.Remove(item.Key);
                 }
                 else
                 {
-                    if (!cache.TryGetValue(item.Text, out var entry))
+                    if (!cache.TryGetValue(item.Key, out var entry))
                     {
                         entry = new CacheEntry();
-                        cache[item.Text] = entry;
+                        cache[item.Key] = entry;
                     }
                     entry.Translated = item.Translated;
                     entry.ValidationScore = item.ValidationScore;
                     entry.ValidationStatus = item.ValidationStatus;
                     entry.ValidationFeedback = item.ValidationFeedback;
-                    StatusMessage = $"Successfully retried, validated, and saved translation for key: {item.Key}";
                 }
-                _tmService.SaveMemory(SelectedLanguage.CultureCode, cache);
+            }
+            _tmService.SaveMemory(SelectedLanguage.CultureCode, cache);
 
-                // 5. Recalculate stats
-                RecalculateAndSaveStats();
-            }
-            catch (Exception ex)
-            {
-                ShowError($"Retry failed: {ex.Message}");
-            }
-            finally
-            {
-                IsLoading = false;
-                RefreshGrid();
-            }
+            StatusMessage = $"Successfully retried and validated {items.Count} reviews.";
+            
+            // 6. Recalculate stats & refresh view.
+            RecalculateAndSaveStats();
+            RefreshGrid();
+            IsAiValidationRun = true;
+            GeneratedRcContent = string.Empty;
+            NotifyStateChanges();
         }
 
         private void MapQaResultsOnly(List<ValidationOutputItem> qaResults)
@@ -476,6 +503,7 @@ namespace Localizer_App.Views
                 string original = File.ReadAllText(SelectedFilePath);
                 GeneratedRcContent = _rcGeneratorService.Generate(original, ResourceStrings.ToList());
                 StatusMessage = "Localized resource generated in memory.";
+                NotifyStateChanges();
             }
             catch (Exception ex)
             {
@@ -549,9 +577,45 @@ namespace Localizer_App.Views
         public string SelectedFilePath
         {
             get => _selectedFilePath;
-            set { SetProperty(ref _selectedFilePath, value, nameof(SelectedFilePath)); OnPropertyChanged(nameof(IsFileSelected)); }
+            set 
+            { 
+                SetProperty(ref _selectedFilePath, value, nameof(SelectedFilePath)); 
+                OnPropertyChanged(nameof(IsFileSelected)); 
+                NotifyStateChanges();
+            }
         }
         public bool IsFileSelected => !string.IsNullOrEmpty(SelectedFilePath);
+
+        private bool _isExtracted;
+        public bool IsExtracted
+        {
+            get => _isExtracted;
+            set { SetProperty(ref _isExtracted, value, nameof(IsExtracted)); NotifyStateChanges(); }
+        }
+
+        private bool _isTranslated;
+        public bool IsTranslated
+        {
+            get => _isTranslated;
+            set { SetProperty(ref _isTranslated, value, nameof(IsTranslated)); NotifyStateChanges(); }
+        }
+
+        public bool CanExtract => IsFileSelected;
+        public bool CanTranslate => IsExtracted;
+        public bool CanValidate => IsTranslated;
+        public bool CanRetryReviews => IsAiValidationRun && ResourceStrings.Any(r => r.ValidationStatus == "Needs Review" || (r.ValidationScore.HasValue && r.ValidationScore.Value < 80));
+        public bool CanGenerate => IsAiValidationRun;
+        public bool CanSave => IsRcGenerated;
+
+        private void NotifyStateChanges()
+        {
+            OnPropertyChanged(nameof(CanExtract));
+            OnPropertyChanged(nameof(CanTranslate));
+            OnPropertyChanged(nameof(CanValidate));
+            OnPropertyChanged(nameof(CanRetryReviews));
+            OnPropertyChanged(nameof(CanGenerate));
+            OnPropertyChanged(nameof(CanSave));
+        }
 
         private TargetLanguage _selectedLanguage = new();
         public TargetLanguage SelectedLanguage
@@ -609,7 +673,12 @@ namespace Localizer_App.Views
         public string GeneratedRcContent
         {
             get => _generatedRcContent;
-            set { SetProperty(ref _generatedRcContent, value, nameof(GeneratedRcContent)); OnPropertyChanged(nameof(IsRcGenerated)); }
+            set 
+            { 
+                SetProperty(ref _generatedRcContent, value, nameof(GeneratedRcContent)); 
+                OnPropertyChanged(nameof(IsRcGenerated)); 
+                OnPropertyChanged(nameof(CanSave)); 
+            }
         }
         public bool IsRcGenerated => !string.IsNullOrEmpty(GeneratedRcContent);
 
@@ -617,7 +686,7 @@ namespace Localizer_App.Views
         public bool IsAiValidationRun
         {
             get => _isAiValidationRun;
-            set => SetProperty(ref _isAiValidationRun, value, nameof(IsAiValidationRun));
+            set { SetProperty(ref _isAiValidationRun, value, nameof(IsAiValidationRun)); NotifyStateChanges(); }
         }
 
         private int _aiValTotalStrings;
