@@ -19,7 +19,7 @@ namespace Localizer_App.Services
 
     public class GeminiService
     {
-        private static readonly HttpClient Client = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+        private static readonly HttpClient Client = new HttpClient();
 
         public async Task<string> CallApiAsync(string systemInstruction, string prompt, string apiKey, string model)
         {
