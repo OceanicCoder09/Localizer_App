@@ -1,0 +1,25 @@
+// Microsoft Visual C++ generated resource script.
+// Tricky test file for localizer parser, translation, and validation validation.
+#include "resource.h"
+#define APSTUDIO_READONLY_SYMBOLS
+#include "winres.h"
+#undef APSTUDIO_READONLY_SYMBOLS
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+STRINGTABLE
+BEGIN
+    IDS_FREEZE_VP           "Freeze selected layers in active viewport only (current VP status: %s)."
+    IDS_DRAFT_MODE          "Toggle ""Draft"" drafting mode. Warning: This is NOT a draft document copy."
+    IDS_SCALE_FACTOR        "Setting scale factor to %d. Ratio is {0} of {1}..."
+    IDS_SOLID_FILL          "Solid fill pattern applied to edge of ""solid"" 3D mesh primitive body."
+    IDS_PLOT_CMD            "Plot layout viewport scale: %1. Please print to file: \\\"\"%2\\\"\""
+    IDS_ACQUIRED_POINT      "Acquired point marker coordinate: (%d, %d). Move cursor to Osnap snap grid."
+    IDS_3DCONNEXION_ERR     "3Dconnexion device error: Alias %s mapping failed."
+    IDS_ADAPTIVE_DEGRAD     "Adaptive degradation active: Reducing display quality by %d%% for speed."
+    IDS_MULTILINE_QUOTE     "First line with \"\"quotes\"\".\nSecond line with tabs:\t%s.\nThird line: %d%% done."
+    IDS_DEFPOINTS_LABEL     "Definition point (defpoints) location: absolute coordinates (%f, %f, %f)."
+END
+
+#endif    // English (United States) resources

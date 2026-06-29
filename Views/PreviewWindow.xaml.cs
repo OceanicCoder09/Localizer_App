@@ -12,7 +12,7 @@ namespace Localizer_App.Views
 {
     public partial class PreviewWindow : Window, INotifyPropertyChanged
     {
-        // Why: Window to preview visual localization using in-memory and cached resources.
+        // Window to preview visual localization using in-memory and cached resources.
         private readonly List<ResourceString> _inMemoryStrings;
         private readonly string _currentCultureCode;
         private readonly RcResourceLoaderService _loader = new RcResourceLoaderService();
@@ -22,7 +22,7 @@ namespace Localizer_App.Views
 
         public PreviewWindow(List<ResourceString> inMemoryStrings, string currentCultureCode)
         {
-            // Why: Initialize components, set data context, load languages, and set default selection.
+            // Initialize components, set data context, load languages, and set default selection.
             InitializeComponent();
             _inMemoryStrings = inMemoryStrings;
             _currentCultureCode = currentCultureCode;
@@ -44,7 +44,7 @@ namespace Localizer_App.Views
 
         private void LoadLanguages()
         {
-            // Why: Populate available languages dynamically based on existing localized files and memory state.
+            // Populate available languages dynamically based on existing localized files and memory state.
             var list = new List<TargetLanguage>
             {
                 new TargetLanguage { Name = "English", CultureCode = "en-US" }
@@ -86,7 +86,7 @@ namespace Localizer_App.Views
 
         private void OnLanguageSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Why: Trigger reload of localized strings when user selects a different language.
+            // Trigger reload of localized strings when user selects a different language.
             var selected = LanguageCombo.SelectedItem as TargetLanguage;
             if (selected != null)
             {
@@ -96,7 +96,7 @@ namespace Localizer_App.Views
 
         private void OnReloadClick(object sender, RoutedEventArgs e)
         {
-            // Why: Reload the resources from the current language file.
+            // Reload the resources from the current language file.
             var selected = LanguageCombo.SelectedItem as TargetLanguage;
             if (selected != null) LoadResources(selected.CultureCode);
         }
@@ -159,19 +159,19 @@ namespace Localizer_App.Views
 
         private string GetText(string key, string fallback)
         {
-            // Why: Safely read resource values and return default label if not present.
+            // Safely read resource values and return default label if not present.
             return _resources.TryGetValue(key, out string? value) ? value : fallback;
         }
 
         private void OnPropertyChanged(string name)
         {
-            // Why: Notify binding engines that a property changed.
+            // Notify binding engines that a property changed.
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
         private void NotifyAllProperties()
         {
-            // Why: Refresh all UI string bindings using a list iteration.
+            // Refresh all UI string bindings using a list iteration.
             string[] names = { 
                 nameof(SupplyText), nameof(UpheavalText), nameof(VeryText), 
                 nameof(SadlyText), nameof(NowText), nameof(AutoText),

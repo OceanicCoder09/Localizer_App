@@ -356,8 +356,9 @@
                 <TextBlock Text="Proof of Concept for hybrid STRINGTABLE parsing and translation" Foreground="#64748B" FontSize="12" Margin="0,3,0,0"/>
             </StackPanel>
             
-            <!-- Model Block -->
+            <!-- Model Block & Glossary CheckBox -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <CheckBox Content="Use Glossary" IsChecked="{Binding UseGlossary, Mode=TwoWay}" VerticalAlignment="Center" Margin="0,0,15,0" Foreground="#475569" FontWeight="SemiBold"/>
                 <TextBlock Text="Model:" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,5,0"/>
                 <ComboBox ItemsSource="{Binding AvailableModels}" SelectedItem="{Binding SelectedModel}" Width="150"/>
             </StackPanel>
@@ -698,7 +699,7 @@
                            Foreground="#64748B" FontSize="11" VerticalAlignment="Center" TextWrapping="Wrap"/>
                 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Style="{StaticResource ModernButton}" Click="OnOpenPreviewClick" IsEnabled="{Binding CanValidate}" Content="Open Preview Window" Margin="0,0,10,0" Width="160"
+                    <Button Style="{StaticResource ModernButton}" Click="OnOpenPreviewClick" Content="Open Preview Window" Margin="0,0,10,0" Width="160"
                             ToolTip="Simulate a localized desktop UI using RC resource files"/>
                     <Button Style="{StaticResource ModernButton}" Click="OnGenerateRcClick" IsEnabled="{Binding CanGenerate}" Content="Generate Localized RC" Margin="0,0,10,0" Width="180"/>
                     <Button Style="{StaticResource AccentButton}" Click="OnSaveRcClick" IsEnabled="{Binding CanSave}" Content="Save Localized RC..." Width="180"/>

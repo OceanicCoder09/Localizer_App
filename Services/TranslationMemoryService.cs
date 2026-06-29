@@ -15,25 +15,25 @@ namespace Localizer_App.Services
 
     public class TranslationMemoryService
     {
-        // Why: Local caching service to read/write translations and validation status to avoid redundant API queries.
+        // Local caching service to read/write translations and validation status to avoid redundant API queries.
         private readonly string _tmFolder;
 
         public TranslationMemoryService()
         {
-            // Why: Resolve cache directory inside application directory.
+            // Resolve cache directory inside application directory.
             _tmFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TranslationMemory");
             Directory.CreateDirectory(_tmFolder);
         }
 
         private string GetFilePath(string cultureCode)
         {
-            // Why: Get JSON file path for target culture.
+            // Get JSON file path for target culture.
             return Path.Combine(_tmFolder, cultureCode + ".json");
         }
 
         public Dictionary<string, CacheEntry> LoadMemory(string cultureCode)
         {
-            // Why: Load JSON dictionary for culture from file.
+            // Load JSON dictionary for culture from file.
             string path = GetFilePath(cultureCode);
             if (!File.Exists(path))
             {
@@ -44,14 +44,14 @@ namespace Localizer_App.Services
 
         private Dictionary<string, CacheEntry> CreateNewMemory(string path)
         {
-            // Why: Create default empty settings file.
+            // Create default empty settings file.
             File.WriteAllText(path, "{}", System.Text.Encoding.UTF8);
             return new Dictionary<string, CacheEntry>(StringComparer.OrdinalIgnoreCase);
         }
 
         private Dictionary<string, CacheEntry> TryReadMemory(string path)
         {
-            // Why: Parse JSON cache and handle exceptions cleanly.
+            // Parse JSON cache and handle exceptions cleanly.
             try
             {
                 string json = File.ReadAllText(path, System.Text.Encoding.UTF8);
@@ -88,7 +88,7 @@ namespace Localizer_App.Services
 
         private Dictionary<string, CacheEntry> HandleCorrupted(string path)
         {
-            // Why: If JSON is corrupted, move file to a backup name and create empty settings.
+            // If JSON is corrupted, move file to a backup name and create empty settings.
             string time = DateTime.Now.ToString("yyyyMMddHHmmss");
             string backupPath = path + ".corrupted." + time + ".bak";
             if (File.Exists(path)) File.Move(path, backupPath);
@@ -97,7 +97,7 @@ namespace Localizer_App.Services
 
         public void SaveMemory(string cultureCode, Dictionary<string, CacheEntry> memory)
         {
-            // Why: Save memory dictionary to JSON file.
+            // Save memory dictionary to JSON file.
             string path = GetFilePath(cultureCode);
             var options = new JsonSerializerOptions { WriteIndented = true };
             string json = JsonSerializer.Serialize(memory, options);

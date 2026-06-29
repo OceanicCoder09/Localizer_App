@@ -1,0 +1,542 @@
+Term,Definition
+3Dconnexion,A set of navigation tools used to control the current view of a model with a 3Dconnexion device.
+3D mesh primitive,"Basic mesh objects such as a box, cone, cylinder, pyramid, wedge, sphere, and torus defined by faceted rather than smooth surfaces. (MESH)"
+absolute coordinates,"Coordinate values measured relative to the coordinate system's origin point (0,0,0)."
+ACB,For AutoCAD Color Book. The XML file format used to store color book data that can be used in AutoCAD-based products.
+acquired point,An intermediate location used as a reference when you use the tracking or object snap tracking methods of locating a point.
+acquisition marker,The temporary plus sign displayed at the location of an acquired point when you use the tracking or object snap tracking methods of locating a point.
+action (AutoCAD on Windows only),The smallest task or user interaction that can be recorded with the Action Recorder.
+Action bar,A toolbar-like interface that displays the actions associated with a parameter object.
+action macro (AutoCAD on Windows only),A series of recorded actions that can be played back in the active drawing.
+action macro file (AutoCAD on Windows only),A file that stores all the actions contained in an action macro. Action macro files have the file extensions .actm or .actmx.
+Action tree (AutoCAD on Windows only),A control used to display the recorded actions in an action macro.
+adaptive degradation,A method of managing graphics performance by turning off graphic features when performance falls below a specified number of frames per second.
+adaptive sampling,A method to accelerate the anti-aliasing process within the bounds of the sample matrix size.
+add-ins,"Libraries of content that extend the functionality of the product, created by third party developers."
+adjacent cell selection,A selection of table cells that share at least one boundary with another cell in the same selection.
+affine calibration,"A calibration method for digitizing tablets that provides an arbitrary linear transformation in 2D space, requiring three calibration points. (TABLET)"
+alias,"A shortcut for a command entered at the Command prompt. For example, CP is an alias for COPY, and Z is an alias for ZOOM."
+aliasing,"The effect of picture elements, or pixels, aligned as a diagonal or curved edge that appearing jagged or stepped."
+aligned dimension,"A dimension that measures the distance between two points at any angle, with the dimension line parallel to the line connecting the definition points. (DIMALIGNED)"
+alpha channel,A type of data found in 32-bit bitmap files that assigns transparency to the pixels in the image.
+ambient color,The color reflected by an object when it is illuminated only by ambient light rather than direct light; the color of an object where it is in shadow.
+ambient light,"Light that illuminates all surfaces of a 3D model with equal intensity, with no single source or direction and does not diminish over distance."
+angular dimension,"A dimension that measures angles or arc segments and consists of text, extension lines, and leaders. (DIMANGULAR)"
+angular unit,"The unit of measurement for an angle, which can be measured in decimal degrees, degrees/minutes/seconds, grads, and radians."
+annotational constraint,A type of dimensional constraint that serves as a dimension object in addition to controlling the size of the geometry.
+annotations,"Text, dimensions, tolerances, symbols, notes, and other types of explanatory symbols or objects."
+annotation scale,"A setting saved with model space, layout viewports, and model views that controls how annotative objects are scaled and displayed."
+annotative,"An object property assigned to objects used to annotate drawings, automating the process of scaling annotations in layout viewports and model space."
+anonymous block,"An unnamed block created by several features, including associative and nonassociative dimensions."
+anti-aliasing,A method that reduces aliasing by shading the pixels adjacent to the primary pixels that define a line or boundary.
+Application menu,The Windows-based menu displayed when you click the Application button in the upper-left corner of the application window.
+approximation points,"Point locations that a B-spline must pass near, within a fit tolerance."
+array,1. Multiple copies of selected objects in a rectangular or polar (radial) pattern. (ARRAY) 2. A collection of data items each identified by a subscript or key.
+arrowhead,The symbol at the end of a dimension line showing where a dimension begins or ends.
+aspect ratio,The ratio of width to height commonly associated with graphic displays and with images.
+associative dimension,A dimension that automatically adjusts its size and value when the associated geometry is modified. (DIMASSOC system variable)
+associative hatch,Hatching that conforms to its bounding objects such that modifying the bounding objects automatically adjusts the hatch. (BHATCH)
+associative surfaces,Surfaces that automatically adjust their location and shape when the geometric objects associated with them are modified. (SURFACEASSOCIATIVITY system variable)
+attenuation,The diminishing of light intensity over distance.
+attribute definition,An object included in a block definition to store alphanumeric data; values can be predefined or specified at insertion. (ATTDEF)
+attribute extraction file,"A text file to which extracted attribute data is written, with contents and format determined by the attribute extraction template file."
+attribute extraction template file,A text file that determines what attribute data is extracted and how the data is formatted when written to an attribute extraction file.
+attribute prompt,The text prompt displayed when you insert a block containing an attribute that needs a value entered.
+attribute tag,"The identifying name given to an attribute, used during extraction of attribute data from a drawing."
+attribute value,The text or numeric information stored in an attribute.
+AutoCAD Color Book,See ACB.
+auxiliary projected view or auxiliary view,"In the model documentation feature, auxiliary projected views display the true shape and relationship of features not located on planes parallel to any principal planes of projection."
+axis tripod,"An icon with X, Y, and Z coordinates used to visualize the viewpoint of a drawing without displaying the drawing. (VPOINT)"
+baseline,An imaginary line on which text characters appear to rest; individual characters can have descenders that drop below the baseline.
+baseline dimension,"Multiple dimensions measured from the same baseline, also called parallel dimensions."
+base point,"1. In grip editing, the grip that changes to solid color when selected. 2. A point for relative distance and angle when copying, moving, and rotating. 3. The insertion base point of the current drawing. 4. The insertion base point for a block definition."
+base view,A drawing view that is projected directly from a 3D model.
+basic wheels,A reference to the View Object wheel and Tour Building wheel.
+Bezier curve,"A polynomial curve defined by a set of control points, representing an equation of an order one less than the number of points considered; a special case of a B-spline curve."
+big wheels,"The large version of the SteeringWheels, with labels displayed on each wheel wedge."
+bitcode,"An integer representation of a binary value or the sum of multiple values, often associated with system variables such as OSMODE and DIMZIN."
+bitmap,"The digital representation of an image having bits referenced to pixels; in color graphics, a different value represents each red, green, and blue component of a pixel."
+block,A generic term for one or more objects combined to create a single object; commonly used for either block definition or block reference. (BLOCK)
+block action,Defines how the geometry of a dynamic block reference will move or change when custom properties of a block reference are manipulated. (BACTION)
+block authoring object,"A dimensional constraint, parameter, or action that adds intelligence to a block definition."
+block authoring palettes,Tool palettes used in the Block Editor to add actions and parameters to dynamic block definitions.
+block authoring tools,"Actions, parameters, and parameter sets used in the Block Editor to create dynamic blocks."
+block constraint parameter,A dimensional constraint that has block authoring information associated with it.
+block definition,"The name, base point, and set of objects combined and stored in the block definition table of a drawing."
+block definition table,"The nongraphical data in a drawing file that stores block definitions, sometimes called the block symbol table or block table."
+block instance,See block reference.
+block properties table,A table that enables users to define different values for a set of properties for the block definition.
+block reference,"A compound object inserted in a drawing that displays the data stored in a block definition, also called an instance. (INSERT)"
+bounded area,"A closed area consisting of a single object such as a circle or closed polyline, or of multiple coplanar objects that overlap."
+B-spline curve,A blended piecewise polynomial curve passing near a given set of control points. (SPLINE)
+bulge magnitude,The amount of curvature where two surfaces meet; applies only to surfaces with G1 or G2 continuity.
+bump map,A map in which brightness values are translated into apparent changes in the height of the surface of an object.
+button menu,The menu for a pointing device with multiple buttons; each button (except the pick button) can be defined in the customization file.
+BYBLOCK,A special object property used to specify that the object inherits the color or linetype of any block containing it.
+BYLAYER,A special object property used to specify that the object inherits the color or linetype associated with its layer.
+callout block,"A block used as a symbol to reference another sheet; also called reference tags, detail keys, or detail markers."
+camera,"Defines the current eye-level position in a 3D model with a location XYZ coordinate, target XYZ coordinate, and field of view or lens length."
+camera target,Defines the point you are viewing by specifying the coordinate at the center of the view.
+candela,The SI unit of luminous intensity (perceived power emitted by a light source in a particular direction) (Symbol: cd).
+cell,The smallest available table selection.
+cell boundary,The four gridlines surrounding a table cell.
+cell style,A style that contains specific formatting for table cells.
+chain actions,"In a dynamic block definition, a property of parameters where a change in one action triggers any actions associated with that parameter."
+change set,A cluster of differences within the margin distance of the revision cloud automatically generated by the DWG Compare feature.
+circular external reference,An externally referenced drawing (xref) that references itself directly or indirectly; the xref creating the circular condition is ignored.
+clamp curve,"A smooth, closed curve such as a circle that has a vertex tangent to the object, which may create kinks if reshaped."
+clamp surface,"A smooth, closed surface such as a cylinder that has a vertex tangent to the object, which may create kinks if reshaped."
+clipping planes,The boundaries that define or clip the field of view.
+cloud computing,Refers to executing software and storing data on shared servers over the internet.
+CMYK,"For cyan, magenta, yellow, and key color. A system of defining colors by specifying percentages of cyan, magenta, yellow, and the key color (typically black)."
+coincident grip,A grip shared by multiple objects.
+Color bleed scale,Increases or decreases the saturation of the reflected color from the material.
+color map,"A table defining the intensity of red, green, and blue (RGB) for each displayed color."
+column (table),A vertically adjacent table cell selection spanning the height of the table.
+command line,"A text area reserved for keyboard input, prompts, and messages."
+comparison drawing,The drawing file specified to compare with the current drawing using the DWG Compare feature.
+compass,"A visual aid that indicates the directions North, South, East, and West in the current model."
+composite solid,"A solid created from two or more individual solids. (UNION, SUBTRACT, INTERSECT)"
+constraint bar,Displays the geometric constraints associated with objects or with points on objects.
+constraint point,"A point on an object that can be geometrically or dimensionally constrained, such as an endpoint or insertion point."
+constraints,"1. A form of parametric design. 2. Rules that govern the position, slope, tangency, dimensions, and relationships among objects in a geometry."
+construction plane,See work plane.
+context menu,See shortcut menu.
+contextual ribbon tab,"In Windows-based products, a ribbon tab displayed only when a certain type of object is selected or when a certain command is started."
+continued dimension,"A type of linear dimension that uses the second extension line origin of a selected dimension as its first extension line origin, also called chain dimension. (DIMCONTINUE)"
+continuity,"A measure of how smoothly two curves or surfaces merge where they are joined, defined as G0 (position), G1 (tangency), and G2 (curvature)."
+control frame,"A series of point locations used as a mechanism to control the shape of a B-spline, connected by line segments for visual clarity."
+control vertices (CVs),The most basic way to shape a NURBS surface or spline; these points act as grips that can be dragged to reshape the object.
+Coons patch,"In 3D surface meshes, the bicubic surface interpolated between four edges."
+coordinate filters,"Functions that extract individual X, Y, and Z coordinate values from different points to create a new composite point, also called X,Y,Z point filters."
+coordinate system or coordinate reference system,"In the geolocation feature, a spatial reference system consisting of a map projection and datum that always specifies the units of measurement."
+coordination model,A model used for virtual coordination of various trades through pre-construction and construction phases; specifically refers to an NWD or NWC file.
+crease,A sharpened ridge that defines one or more edges of a mesh face subobject. (MESHCREASE)
+crosshairs,A type of cursor consisting of two lines that intersect.
+crossing selection,A rectangular area drawn to select objects fully or partly within its borders.
+cross sections,Curves or lines that define the profile (shape) of a lofted solid or surface; can be open or closed. (LOFT)
+CTB file,For Color-Dependent Plot Style Table file; contains plot styles and their characteristics defined by color assignments.
+ctrl-cycle,A method for cycling between different behaviors while editing geometry by pressing and releasing the Ctrl key.
+current directory,See working folder.
+current drawing,A drawing file that is open in the program and receives any command or action that you enter.
+current location indicator,"In the geolocation feature, a transient blue pin placed in model space that indicates the current location of a device."
+cursor,See pointer and crosshairs.
+cursor menu,See shortcut menu.
+curve-fit,A smooth curve consisting of arcs joining each pair of vertices; the curve passes through all vertices of the polyline.
+custom grips,"In a dynamic block reference, used to manipulate the geometry and custom properties."
+customization file,An XML-based file such as acad.cuix or acadlt.cuix that stores customization data.
+custom object,A type of object created by an ObjectARX application with more specialized capabilities than standard objects.
+CV hull,"A NURBS surface modified through its control vertices (CV) hull, consisting of control vertices and lines connecting them in the U and V directions."
+data link,A connection between a table and an external source of data.
+datum,"In the geolocation feature, a reference point from which measurements are made for a coordinate system."
+decimal degrees,"A notation for specifying latitude and longitude, e.g., 35.1234�, 100.5678�, where latitude always precedes longitude."
+default,"A predefined, assumed value for a program input, setting, or parameter, denoted by angle brackets (<>)."
+default drawing,See initial environment.
+default lighting,"The lighting in a shaded viewport when the sun and user lights are turned off, using two distant light sources that follow the viewpoint."
+default value,"The value that is accepted when you press Enter at a sub-prompt, displayed in angle brackets <>."
+definition (symbol) table,"The nongraphical data area in a drawing file that stores definitions of blocks, dimension styles, layers, and other named objects."
+definition point,A node located at the end of an extension line corresponding to the location on the object being dimensioned; stored on the Defpoints layer.
+degree,"A mathematical property of a curve or surface indicating the type of polynomial equation used (e.g., degree 1 linear, degree 2 quadratic, degree 3 cubic)."
+dependency highlighting,"In a dynamic block definition, how associated objects are displayed when you select a parameter, grip, or action."
+dependent named objects (in xrefs),Named objects brought into a drawing by an xref.
+dependent symbols,See dependent named objects (in xrefs).
+Design Coordinate System,"In the geolocation feature, an AutoCAD specific coordinate system providing flexibility in choosing a different unit of measure, insertion point, and orientation."
+detail view,"In the model documentation feature, a projected view that displays a specified portion of another drawing view, typically at an enlarged scale."
+detail view label,"In the model documentation feature, the customizable text that identifies a detail view, often indicating the scale."
+DGN underlay,See underlay.
+DIESEL,For Direct Interpretively Evaluated String Expression Language. A macro language for altering the status line and customizing menu items.
+diffuse color,The color that an object reflects when illuminated by direct daylight or artificial light that makes the object easy to see.
+digital signature,"An encrypted digital code added to a file for assuring the authenticity of digital messages, documents, and programs."
+dimensional constraint,"A parametric dimension that controls the size, angle, or position of geometry; resizes the constrained object when its value is changed."
+dimension line arc,"An arc, usually with arrowheads at each end, that spans the angle formed by the extension lines of the angle being measured."
+dimension style,A named group of dimension settings that determines the appearance of the dimension and simplifies the setting of dimension system variables. (DIMSTYLE)
+dimension text,The measurement value of dimensioned objects.
+dimension variables,"A set of numeric values, text strings, and settings that control dimensioning features. (DIMSTYLE)"
+direct distance entry,"A method to specify a second point by moving the cursor to indicate direction, then entering a distance."
+dithering,Combining color dots to give the impression of displaying more colors than are actually available.
+dockable window,"In AutoCAD-based products under Windows, a user interface element that can be docked, anchored, or floating in the drawing area."
+drawing area,The area in which your drawings are displayed and modified.
+drawing extents,The smallest rectangular area that contains all objects in a drawing. (ZOOM)
+drawing folder,The drive and folder path of the current drawing. (DWGPREFIX system variable)
+drawing limits,See grid limits.
+drawing set,A collection of drawings assembled using the Publish dialog box.
+drawing state,A collection of known settings that define the behavioral properties of the drawing environment at a known period of time.
+drawing template (DWT) file,A drawing file with preestablished settings for new drawings. Any drawing file can be saved as a DWT file.
+drawing view,A rectangular object that contains a 2D projection of a 3D model.
+driving dimension,A parametric dimension that determines the size of geometry and resizes the object when its value changes.
+driving property,A lookup property considered invertible when a manual change in the lookup value causes other property values to change.
+DSD,For drawing set descriptions. A file format for saving a description of a drawing set assembled using the Publish dialog box.
+DST,For sheet set data. The XML file format used to store the associations and information that define a sheet set.
+DWF,"An open, published, and secure file format developed by Autodesk that enables combining and publishing design data to share with others."
+DWF underlay,See underlay.
+DWFx,"A version of DWF based on the XML Paper Specification (XPS) from Microsoft, enabling DWF files to be viewed using the Microsoft XPS Viewer."
+DWG,The standard file format for saving AutoCAD-based vector graphics.
+DXF,For drawing interchange format. An ASCII or binary file format of a drawing file for exporting to or importing from other applications.
+dynamic constraint,A type of dimensional constraint that adjusts its size automatically and can be displayed or hidden.
+dynamic dimension,"Temporary dimensions that appear on objects, including dynamic block references, when they are edited with grips."
+edge,The boundary of a face.
+edge modifiers,Effects such as overhang and jitter that control how edges are displayed in a shaded model.
+electronic drawing set,"The digital equivalent of a set of plotted drawings, created by publishing drawings to a multi-sheet DWF file."
+embed (OLE),"An embedded object is a copy of information from a source document placed in the destination document, not linked to the source."
+empty selection set,A selection set that contains no objects.
+enterprise customization file,"A CUIx file typically controlled by a CAD manager, stored in a shared network location, and read-only to users."
+environment map,"A bitmap used to simulate reflections in materials that have reflective properties, wrapped around the scene."
+environment variable,A setting stored in the operating system that controls the operation of a program.
+expanded panel,"In AutoCAD-based products on Windows, an area on the ribbon associated with a ribbon panel containing additional tools and controls."
+explode,"To disassemble a complex object such as a block, dimension, solid, or polyline into simpler objects. (EXPLODE)"
+exploded dimension,A set of objects that have the appearance of a dimension but are not associated with the dimensioned object or each other. (EXPLODE)
+extended command history,An expanded list of commands and prompts that extends up or down from the command line.
+extended tooltips,"In AutoCAD-based products on Windows, displays additional information in a tooltip when the cursor hovers over a tool for a specific length of time."
+extents,See drawing extents.
+external reference,"A file referenced from a drawing file, linking to the referenced file; supported types include DWG, raster images, DWF, DWFx, DGN, PDF, and PCG. (EXTERNALREFERENCES)"
+extrusion,A 3D solid created by sweeping an object that encloses an area along a linear path. (EXTRUDE)
+face,A triangular or quadrilateral portion of a solid or surface object.
+face color mode,A setting in the visual style that controls how color is displayed on a face.
+face style,A setting in the visual style that defines the shading on a face.
+facet,A triangular or quadrilateral portion of a 3D mesh object; smoothing a mesh object increases the number of facets.
+feature control frame,"The tolerance that applies to specific features or patterns of features, always containing a geometric characteristic symbol and a tolerance value."
+fence,A multi-segmented selection line that selects objects as it passes through them. (SELECT)
+field,A specialized text object set up to display data that may change during the life cycle of the drawing. (FIELD)
+file tab,A tab at the top of the drawing window that corresponds to an open drawing.
+fill,A solid color covering an area bounded by lines or curves. (FILL)
+filters,See coordinate filters.
+final gathering,An optional additional step for calculating global illumination that increases the number of rays used and reduces rendering artifacts.
+fit points,Locations that a B-spline must pass through exactly or within a fit tolerance.
+fit tolerance,The setting for the maximum distance that a B-spline can pass for each of the fit points that define it.
+floating panel,"In AutoCAD-based products on Windows, a ribbon panel that is not attached to the rest of the ribbon or file window."
+floating viewports,See layout viewports.
+font,"A character set made up of letters, numbers, punctuation marks, and symbols of a distinctive proportion and design."
+footcandle,The American unit of illuminance (symbol: fc). Lm/ft�.
+frame,"An individual, static image in an animated sequence."
+freeze,"A setting that suppresses the display of objects on selected layers; objects on frozen layers are not displayed, regenerated, or plotted. (LAYER)"
+front faces,Outward-facing sides of 3D faces.
+G0 G1 G2 continuity,See continuity.
+general properties,"Properties common between a selection of objects, including color, layer, linetype, linetype scale, plot style, lineweight, transparency, hyperlink, and thickness."
+generic surface,"A 3D surface object with no control vertices, history, or analytic information; cannot be associative."
+geographic coordinate system,"In the geolocation feature, a reference system that uses a three-dimensional spherical surface to determine locations on the earth."
+geographic elevation,The relative height along the specified up-direction defined for a geographic marker.
+geographic marker,"In the geolocation feature, an annotation that marks a location of known latitude and longitude in model space."
+geo marker,See geographic marker.
+geometric constraint,"Rules that define the geometric relationships of objects or points on objects, controlling how an object can change shape, size, or location."
+geometry,"All graphical objects such as lines, circles, arcs, polylines, and dimensions."
+gesture,"Predefined motions such as swiping, pinching, or sliding that perform an action such as panning or zooming an object."
+gizmo,"A tool that permits you to manipulate a 3D object uniformly or along a specified axis or plane, displayed when you select a 3D object."
+global illumination,An indirect illumination technique that allows for effects such as color bleeding by simulating photon bounce between objects.
+Gooch shading,A type of shading that uses a transition from cool to warm colors rather than from dark to light.
+graphics area,See drawing area.
+grid,An area covered with regularly spaced dots or lines to aid drawing; the grid is never plotted. (GRID)
+grid limits,"The user-defined rectangular boundary of the drawing area covered by dots when the grid is turned on, also called drawing limits. (LIMITS)"
+grip menu options,See multi-functional grip menu options.
+grip modes,"The editing options accessible from selected grips on selected objects: stretching, moving, rotating, scaling, and mirroring."
+grips,"Small squares and triangles that appear on objects you select; after selecting a grip, you can edit the object by clicking or right-clicking instead of entering commands."
+grip tool,"An icon used in a 3D view to constrain the movement or rotation of a selection set to an axis or plane. (3DMOVE, 3DROTATE)"
+ground plane,"The XY plane of the user coordinate system when perspective projection is turned on, displaying with a color gradient between the ground horizon and ground origin."
+guide curves,Lines or curves that intersect each cross section of a lofted solid or surface and define the form by adding wireframe information. (LOFT)
+HDI,For Heidi Device Interface. An interface for developing peripheral device drivers for Autodesk products on Windows.
+helix,An open 2D or 3D spiral. (HELIX)
+HLS,"A system of defining color by specifying the values for hue, saturation, and luminance."
+Home view,"A view saved with the drawing and controlled with the ViewCube tool, similar to the default view presented when a drawing is first opened."
+horizontal landing,An optional line segment connecting the tail of a leader line with the leader content.
+hot grip,A selected grip.
+i-drop,A method by which a drawing file can be dragged from a Web page and inserted into another drawing.
+IGES,For Initial Graphics Exchange Specification. A standard format for digital representation and exchange of information between CAD/CAM systems.
+Illuminance,"In photometry, the total luminous flux incident on a surface per unit area."
+indirect bump scale,Scales the effect of the base material's bump mapping in areas lit by indirect light.
+indirect illumination,Illumination techniques such as global illumination and final gathering that enhance realism by simulating the interreflection of light between objects.
+initial environment,The variables and settings for new drawings as defined by the default drawing template file.
+input property,"In a dynamic block definition, a parameter property that can be added as a column to a lookup table."
+intensity,"In reality capture, the reflectance of each point from laser return. In rendering, specifies the brightness of a light measured in candelas (cd)."
+interpolation points,Defining points that a B-spline passes through.
+island,"An enclosed area within another enclosed area, detected as part of creating hatches, polylines, and regions. (BHATCH, BOUNDARY)"
+isolines,Display lines that appear on the curved surfaces of 3D solids with several visual styles including wireframe.
+isometric snap style,"A drafting option that aligns the cursor with two of three isometric axes and displays a grid, making 2D isometric drawings easier to create."
+isoparm,"Lines of constant U or V values that run along a NURBS surface, showing the shape of the surface as defined by control vertices."
+key point,"In a dynamic block definition, the point on a parameter that drives its associated action when edited in the block reference."
+KML or keyhole mapping language,"In the reality capture feature, an XML grammar and file format for modeling and storing geographic features for display in Google Earth and similar applications."
+KMZ,"In the reality capture feature, a compressed version of a KML file."
+knot parameterization,"A setting that affects the shape of a fit point spline, determining how component curves between successive fit points are blended. (SPLKNOTS system variable)"
+label block,"A block used to label views and details, containing data such as title, view number, and scale associated with the referenced view."
+landing,The portion of a leader object that acts as a pointer to the object being called out; can be a straight line or a spline curve.
+landing gap,An optional space between a leader tail and the leader content.
+layer,A logical grouping of data like transparent acetate overlays on a drawing. (LAYER)
+layer index,"A list showing the objects on each layer, used to locate what portion of the drawing is read when partially opening a drawing."
+layer translation mappings,"Assignments of a set of layers to another set of layers that defines standards, including layer names and layer properties."
+layout,The 2D environment in which you create layout viewports and place title blocks for plotting.
+layout viewports,Objects created in paper space that display views. (VPORTS)
+leader tail,The portion of a leader line that is connected to the annotation.
+lens length,"Defines the magnification properties of a camera's lens; the greater the lens length, the narrower the field of view."
+level of smoothness,The property assigned to a mesh object that controls how much the edges are smoothed; higher levels result in more faces and increased smoothness.
+library search path,"The order in which the product looks for a support file: current folder, drawing folder, support path, and folder containing the executable file."
+light glyph,The graphic representation of a point light or a spotlight.
+limits,See drawing limits.
+line font,See linetype.
+linetype,"How a line or curve is displayed, e.g., a continuous line has a different linetype than a dashed line, also called line font. (LINETYPE)"
+lineweight,A width value that can be assigned to all graphical objects except TrueType fonts and raster images.
+link (OLE),To use OLE to reference data in another file so that changes to the source document are automatically updated in any destination document.
+LL84 coordinate system,Common latitude longitudinal-based coordinate system where latitude and longitude are measured from -90 to 90 degrees.
+lofted solid or surface,A solid or surface drawn through a set of two or more cross-section curves that define the profile of the resulting object. (LOFT)
+lookup property,"In a dynamic block definition, a lookup parameter added to a lookup table whose value is assigned to the block reference based on input property matches. (BLOOKUPTABLE)"
+lookup table,Defines properties for and assigns property values to a dynamic block based on how the block is manipulated. (BLOOKUPTABLE)
+lumen,The SI unit of luminous flux (Symbol: lm).
+luminaire,The aggregation of a lamp or lamps and its fixture.
+luminance,"The value of light reflected off a surface, measuring how bright or dark we perceive the surface."
+luminous flux,The perceived power in per unit of solid angle; the total luminous flux for a lamp is the perceived power emitted in all directions.
+lux,The SI unit of illuminance (symbol: lx). Lm/m�.
+macro-derived selection,A selection set of all objects created during the playback of an action macro up to the command requesting a selection set.
+magnitude,See bulge magnitude.
+main customization file,"The CUIx file that defines most user interface elements including menus, toolbars, keyboard accelerators; loaded automatically at startup."
+map image,"In the geolocation feature, a transient map retrieved from an online service provider and displayed in the drawing area to cover the region of the assigned coordinate system."
+markup,A single comment or markup geometry correction inserted into a DWF file using Autodesk Design Review.
+markup set,A group of markups contained within a single DWF file.
+merge,"In tables, an adjacent cell selection that has been combined into a single cell."
+mesh,"A tessellated, or subdivided object type defined by faces, edges, and vertices that can be smoothed or creased."
+mini wheels,The small version of SteeringWheels with no labels displayed on any of the wedges.
+mirror,To create a new version of an existing object by reflecting it symmetrically with respect to a specified line or plane. (MIRROR)
+mode,A software setting or operating state.
+model,"A 2D or 3D representation of a mechanical part, house or building, piping, electrical circuitry, or other entity."
+model documentation,A feature that generates associative 2D drawings from AutoCAD and Autodesk Inventor 3D models.
+model edge,"In the model documentation feature, the style of the cutout line displayed by a detail view."
+model space,"One of the two primary spaces in which objects reside, typically where geometric models are created. (MSPACE)"
+model viewports,A feature that splits the drawing area into one or more adjacent rectangular viewing areas. (VPORTS)
+motion path,"Defines the path or target of a camera; a path can be a line, arc, elliptical arc, circle, polyline, 3D polyline, or spline."
+multi-functional grip menu options,Editing options accessible from the grip menu that appears when you hover over an object grip.
+multileader,A leader object that creates annotations that can have multiple leader lines.
+multi-sheet DWF,A DWF file that contains multiple sheets.
+My Location indicator,An indicator in model space that shows your current location in GPS-enabled systems.
+named object,"Various types of nongraphical information stored with a drawing, including linetypes, layers, dimension styles, text styles, block definitions, layouts, and views."
+named objects dependent,See dependent named objects (in xrefs).
+named path,A saved motion path object that is linked to a camera or target.
+named range,A tool in Microsoft Excel that provides a method to assign a meaningful name to a single cell or a range of cells.
+named view,A view saved that can be restored later. (VIEW)
+navigation bar,"Navigation tools common across multiple Autodesk products on Windows, including ViewCube, SteeringWheels, ShowMotion, and 3Dconnexion."
+node,"A type of object snap that locates point objects, dimension definition points, and text origin points."
+non-associative dimension,A dimension that does not automatically change as the associated geometry is modified. (DIMASSOC system variable)
+normal,"A vector that defines the direction a face is pointing, orthogonal to its surface; indicates the front or outer surface of the face."
+noun-verb selection,Selecting an object first and then performing an operation on it rather than entering a command first and then selecting the object.
+NURBS,For nonuniform rational B-spline curve. A B-spline curve or surface defined by a series of weighted control points and one or more knot vectors.
+NURBS surface,A smoothly joined set of four-sided patches defined by NURBS curves located along and across the surface in U and V directions.
+object,"One or more graphical elements such as text, dimensions, lines, circles, or polylines, treated as a single element; formerly called entity."
+ObjectARX (Runtime Extensions),A compiled-language programming environment that runs under Windows used for developing product-specific applications and extensions.
+object enabler,A tool that provides viewing and standard editing access to a custom object when the ObjectARX application is not present.
+Object Snap mode,A method for specifying commonly needed point locations on an object when creating or editing objects.
+object snap override,Turning off or changing a running Object Snap mode for input of a single point.
+OLE,For object linking and embedding. An information-sharing method where data from a source document can be linked to or embedded in a destination document.
+online,Content and applications accessible from the internet.
+opacity map,"Projection of opaque and transparent areas onto objects, creating the effect of a solid surface with holes or gaps."
+origin,"The point where coordinate axes intersect, e.g., where X, Y, and Z axes meet at 0,0,0."
+orthogonal,An orientation of two objects when they have perpendicular slopes or tangents at the point of their intersection.
+Ortho mode,A setting that limits pointing device input to horizontal or vertical directions relative to the current snap angle and user coordinate system.
+output property,A lookup property whose value is determined by input properties through the use of a lookup table.
+page setup,A collection of plot device and other settings that affect the appearance and format of the final output.
+palette,"A Windows-specific user interface element that can be docked, anchored, or floating in the drawing area."
+pan,To shift the view of a drawing without changing magnification. (PAN)
+paper space,"One of two primary spaces in which objects reside, used for creating a finished layout for printing or plotting. (PSPACE)"
+parameter,"In a dynamic block definition, defines custom properties for the dynamic block by specifying positions, distances, and angles for geometry."
+parameter set,A tool that adds one or more parameters and one or more associated actions to the dynamic block definition.
+parametric design,Ability to establish relationships between objects and drive the size and orientation of geometry with model and user-defined parameters.
+parametric drawing,"A feature that assigns constraints to objects, establishing the distance, location, and orientation of objects with respect to other objects."
+partial customization file,Any CUI file not defined as the main CUI file; can be loaded and unloaded as needed during a drawing session.
+path curve,"Defines the direction and length that a profile curve is lofted, swept, or extruded to create a 3D solid or surface."
+PC3 file,"Partial plotter configuration file containing plot settings information such as device driver, model, and output port."
+performance tuning,A method of optimizing 3D graphics performance by examining your graphics card and 3D display driver.
+periodic curve,"A smooth, closed curve such as a circle whose control vertices are not tangent to the object, staying smooth if reshaped."
+periodic surface,"A smooth, closed surface such as a cylinder whose control vertices are not tangent to the object, staying smooth if reshaped."
+perspective view,"Objects in 3D seen by an observer at the viewpoint looking at the view center, where objects appear smaller as the distance increases."
+photometric lights,Physically-correct lights that attenuate as the square of the distance; photometry measures visible light in terms of perceived brightness.
+photon map,A technique to generate indirect illumination effects of global illumination by tracing photons emitted from a light through the model.
+photorealistic rendering,Rendering that resembles a photograph.
+pick button,The button on a pointing device used to select objects or specify points on the screen; the left button on a two-button mouse by default.
+pick-first,The selection of objects before a command is entered or action macro starts.
+pick-first set,A selection set of objects selected prior to the execution of an action macro or a command.
+pick points,The selection of objects before a command is entered or action macro starts.
+planar face,A flat face that can be located anywhere in 3D space.
+planar projection,Mapping objects or images onto a plane.
+planar surface,A flat surface that can be located anywhere in 3D space. (PLANESURF)
+plan view,"A view orientation from a point on the positive Z axis toward the origin (0,0,0). (PLAN)"
+playback,The process of executing the actions stored in a previously recorded action macro.
+pline,See polyline.
+plot style,"An object property that specifies a set of overrides for color, dithering, gray scale, pen assignments, and other settings, applied at plot time."
+plot style table,"A set of plot styles defined in tables, applying to objects when the table is attached to a layout or viewport."
+plug-ins,See Add-ins.
+PMP file,Plot Model Parameter file containing custom plotter calibration and custom paper size information associated with a plotter configuration file.
+point,"1. A location in 3D space specified by X, Y, and Z coordinate values. 2. An object consisting of a single coordinate location. (POINT)"
+point cloud,"A large collection of points placed in model space that create a 3D representation of objects, geographic features, or areas."
+point cloud segmentation,"The process of identifying groups of points in a point cloud that represent different surfaces, occurring during indexing of scan files in Autodesk ReCap."
+pointer,A cursor on a video display screen that can be moved to place textual or graphical information.
+point filters,See coordinate filters.
+polar array,Objects copied around a specified center point a specified number of times. (ARRAY)
+Polar Snap,A precision drawing tool used to snap to incremental distances along the polar tracking alignment path.
+polar tracking,A precision drawing tool that displays temporary alignment paths defined by user-specified polar angles.
+polyface and polygon mesh,"Legacy mesh types available before AutoCAD 2010; the newer, more flexible mesh type is recommended."
+polygon window selection,A polygonal area specified to select multiple objects.
+polyline,"An object composed of one or more connected line segments or circular arcs treated as a single object, also called pline."
+polysolid,A swept solid drawn the same way as a polyline with a rectangular profile of specified height and width. (POLYSOLID)
+position marker,An annotation placed in model space to mark and label a geographic location.
+pre-playback drawing environment,The drawing state prior to the playback of an action macro.
+pre-selection set,A selection set of objects defined prior to the execution of an action macro.
+primary instance,"In Smart Blocks: Detect and Convert, the block definition used as the original when converting to a new or existing block."
+primary table fragment,The fragment of a broken table that contains the beginning set of rows up to the first table break.
+primitive,"Basic 3D forms such as a box, cone, cylinder, pyramid, wedge, sphere, and torus."
+procedural materials,"Materials that generate a 3D pattern in two or more colors and apply it to an object, such as marble and wood."
+procedural surface,A 3D surface object with history and analytic information but no control vertices; the only type of surface that can be associative.
+profile curve,"An object that is swept, extruded, or revolved and defines the shape of the resulting 3D solid or surface. (SWEEP, EXTRUDE, REVOLVE)"
+project-aware,Support files are connected so all drawings and collaborators in an Autodesk Docs project can share one set of support files.
+projected view,"A drawing view projected from an existing drawing view, associated with the model documentation feature."
+prompt,A message on the command line or in a tooltip that asks for information or requests an action.
+proxy object,A substitute for a custom object when the ObjectARX application that created it is not available.
+push pin,A push pin-shaped button used on the ribbon and application menu to keep panels expanded or items in the recently viewed list.
+PWT,A template file format used to publish drawings to the Web.
+Quick View,A tool to preview and switch between open drawings and layouts in a drawing.
+Quick View image,"A thumbnail image of a drawing, layout, or model space displayed using Quick View."
+ray-traced shadows,Shadows generated by the renderer by tracing the path of rays from the light source; they have sharp edges.
+ray tracing,A rendering technique that traces the path of rays to generate physically accurate reflections and refractions.
+recorded value,The input captured during the recording of an action macro for a sub-prompt of a command.
+rectangular break,To break a table into multiple parts that are evenly spaced and set at a user-specified height using table breaking grips.
+refine,To quadruple the number of faces in a mesh object while resetting the baseline level of smoothness. (MESHREFINE)
+reflectance scale,Increases or decreases the amount of energy the material reflects.
+reflection color,"The color of a highlight on shiny material, also called specular color."
+reflection line,"In a dynamic block reference, the axis about which a flip action's selection set flips when the associated parameter is edited."
+reflection mapping,Creates the effect of a scene reflected on the surface of a shiny object.
+refraction,How light distorts through an object.
+regenerate,To update the objects in the drawing area by recomputing the screen coordinates from the database. (REGEN)
+region,"A 2D enclosed area with physical properties such as centroids or centers of mass, created from objects that form closed loops. (REGION)"
+relative coordinates,Coordinates specified in relation to previous coordinates.
+relax constraints,"Ability to temporarily ignore constraints while editing geometry; after editing, constraints are removed or retained based on validity."
+request user input,An item assigned to an action node that pauses action macro playback so a user can provide input before playback resumes.
+reverse lookup (dynamic blocks),"Adds a lookup grip to a dynamic block reference, displaying a drop-down list of lookup values when clicked. (BLOOKUPTABLE)"
+rewind,"Restores the previous view or movement path created by ViewCube, SteeringWheels, or other navigation tool."
+RGB,"For red, green, and blue. A system of defining colors by specifying percentages of red, green, and blue."
+ribbon,"For Windows-based products, a palette displaying buttons and controls for 2D drawing, annotation, 3D modeling, viewing, and rendering. (RIBBON)"
+ribbon panel,"For Mac products, a set of labeled controls related to a task grouped together in a ribbon."
+ribbon tab,"For Windows-based products, the highest level of ribbon grouping based on an action, containing groups of ribbon panels."
+roll arrows,Curved arrows located above the ViewCube tool used to rotate the current view 90 degrees clockwise or counterclockwise.
+roughness,"Simulates how light hitting a face is reflected back to the user; high roughness simulates rough objects, low roughness simulates shiny objects."
+row (table),A horizontally adjacent table cell selection spanning the width of the table.
+rubber-band line,A line that stretches dynamically within the drawing area with the movement of the cursor.
+running object snap,Setting an Object Snap mode so it continues to be applied for subsequent selections. (OSNAP)
+sampling,An anti-aliasing technique that provides a best-guess color for each rendered pixel by sampling scene color within the pixel then applying a filter.
+save back,To update the objects in the original reference with changes made to objects in a working set during in-place reference editing.
+scale representation,The display of an annotative object based on the annotation scales that the object supports.
+script file,"A set of commands executed sequentially with a single SCRIPT command, created outside the program and saved with the .scr file extension."
+search tag,A user-defined keyword used to search for commands in the menu browser for Windows-based products.
+secondary table fragment,Any fragment of a broken table that does not contain the beginning set of rows.
+section line,An annotated line that represents the imaginary cutting plane used to generate a section view.
+section view,A projected view that shows the hidden interior details as though the drawing view was sliced through.
+selection node,A specific type of action tree node used to handle selection activities.
+selection sensitivity,The ability to define the pivot point for reorienting a model based on the current selection.
+selection set,One or more selected objects that a command can act upon at the same time.
+shadow maps,A bitmap generated during a pre-rendering pass of the scene; shadow maps have softer edges than ray-traced shadows.
+ShapeManager,The Autodesk technology that provides 3D solid modeling to AutoCAD and other products.
+Shared View,An online visual representation of a model or design uploaded from an Autodesk product that can be viewed in the Autodesk Viewer.
+sheet,A layout selected from a drawing file and assigned to a sheet set.
+sheet list table,"A table listing all sheets in a sheet set, which can be generated automatically with the Sheet Set Manager."
+sheet selection,"A named selection of sheets in a sheet set that can be recalled for archiving, transmitting, and publishing operations."
+sheet set,An organized and named collection of sheets from several drawing files. (SHEETSET)
+shortcut keys,"Keys and key combinations that start commands, such as CTRL+S to save a file on Windows or Command-S on Mac."
+shortcut menu,The menu displayed at your cursor location when you right-click your pointing device; also called context menu or right-click menu.
+shot,"A saved view that can later be restored by name or with ShowMotion, containing a static thumbnail or camera motion playable as animation."
+ShowMotion,"A user interface element for accessing named views (shots) stored in the current drawing, organized by sequences."
+sky,"The background color of the drawing area when perspective projection is turned on, displaying with a color gradient between sky horizon and sky zenith."
+slide-out panel,"For Windows-based products, an area on the ribbon associated with a ribbon panel that contains additional tools and controls."
+smoothness,A property of mesh objects that controls the roundness of the object; higher smoothness levels result in more faces.
+smooth shading,Smooths the edges between polygon faces.
+snap angle,The angle that the snap grid is rotated.
+snap grid,"An invisible grid that locks the cursor into a specified spacing, which can be different in the X and Y directions. (SNAP)"
+snap resolution,The spacing between points of the snap grid.
+solid history,A property of a solid that allows you to see and modify the original forms of the solid.
+solid object,"An object that represents the 3D volume of an object, for example a cylinder."
+solid primitive,"A basic 3D shape such as a box, wedge, cone, cylinder, sphere, torus, and pyramid."
+spatial index,"A list that organizes objects based on their location in space, used to locate portions of a drawing when partially opening it."
+spectrum,"In the reality capture feature, an option to map colors to point cloud intensity to help distinguish intensity details in complex point clouds."
+specular reflection,The light in a narrow cone where the angle of the incoming beam equals the angle of the reflected beam.
+spline-fit polyline,A curve that uses the vertices of a selected polyline as control points of a curve approximating a B-spline.
+split face,A mesh face that has been subdivided along a specified vector.
+Start In folder,"The drive and folder path from where the product was started, determined by the Start In attribute of the desktop shortcut. (STARTINFOLDER system variable)"
+STB file,For plot style table file. Contains plot styles and their characteristics.
+SteeringWheels,A tool set that provides access to 2D and 3D navigation tools.
+stretch frame,"In a dynamic block definition with a stretch or polar stretch action, determines how objects within or crossed by the frame are edited."
+subdivision,"A division, or tessellation, in a mesh object; as a mesh object is smoothed, the number of subdivisions increases."
+subobject,A part of a composite object.
+sub-prompt,A command prompt that instructs for a form of input to complete a command or alter a property.
+subset,A named collection of sheets in a sheet set often organized by discipline or workflow stage.
+surface,"A 3D object that is an infinitely thin shell; there are 3 types: analytic, generic, and NURBS."
+surface associativity,See associative surfaces.
+surface indication leader,"An additional leader (arrowhead, leader and reference line) added to surface texture symbols, used to point to surfaces or faces rather than edges."
+surface normal,Positive direction perpendicular to the surface of an object.
+swept solid or surface,A solid or surface created in the shape of a specified profile swept along a specified path. (SWEEP)
+symbol,"A representation of an item commonly used in drawings, inserted as blocks."
+symbol library,A collection of block definitions stored in a single drawing file.
+symbol table,See definition table and block definition table.
+system variable,"Similar to a command, it controls operating settings of the product including modes, sizes, or limits."
+table,"A rectangular array of cells containing annotation, primarily text but also blocks. (TABLE)"
+table break,The point at the bottom of a table row where the table will be split into a supplementary table fragment.
+table style,A style that contains a specific table format and structure; contains at least 3 cell styles.
+tab list,The drop-down list that appears when file tabs have outgrown the available space in the drawing window.
+temporary files,Data files created during a program session that are deleted by the time you end the session.
+temporary prompt history,The list of commands and prompts displayed transparently above the Command prompt in an undocked Command Line window.
+tessellation lines,Display lines that help you visualize a curved mesh surface.
+text style,"A named, saved collection of settings that determines the appearance of text characters."
+texture map,The projection of an image such as a fabric pattern onto an object such as a chair.
+thaw,A setting that displays previously frozen layers. (LAYER)
+thickness,"A legacy property of 2D objects extruded to provide a 3D appearance. (PROPERTIES, CHPROP, ELEV, THICKNESS)"
+tiled viewports,See model viewports.
+TILEMODE,A system variable that controls whether viewports are created as movable layout viewports or as nonoverlapping model viewports.
+toolbar,Part of the interface containing icons that represent commands in AutoCAD-based products under Windows.
+tooltip,A small box of text that identifies or explains an object or interface element when the cursor hovers near or over it.
+tracking,A method for determining a point relative to other points on the drawing.
+tracking menu,A cluster of buttons associated with SteeringWheels that follow the cursor as you move it.
+translucency,How light diffuses through an object.
+transmittance scale,Increases or decreases the amount of energy a transparent material transmits out to the scene.
+transparency,A value that defines how much light passes through an object.
+transparent command,A command that is started while another one is still in progress; precede with an apostrophe.
+trusted locations,Specified folders permitted to run executable code. (TRUSTEDPATHS)
+two-sided material,The positive and negative normal of the material will be considered during the rendering process.
+UCS,See user coordinate system (UCS).
+UCS definition,"A named and saved UCS location and orientation; each UCS definition can have its own origin and X, Y, and Z axes."
+UCS icon,An icon that indicates the orientation of the UCS axes. (UCSICON)
+underconstrained geometry,"In parametric drawing, objects with unsolved degrees of freedom."
+underground,The XY plane of the user coordinate system when perspective projection is turned on and viewed from below ground.
+underlay,An Autodesk DWF or Microstation DGN file attached to a DWG drawing file to provide visual information and object snap locations.
+up direction,"A vector defining what direction is Up; by default the positive Z-axis (0,0,+1), always perpendicular to the north direction."
+user coordinate system (UCS),A movable coordinate system that establishes the XY plane and Z-axis direction for drawing and modeling.
+user parameter,"A named, user-defined variable (real number or expression) that can be used in expressions for dimensional constraints or other user parameters."
+UVW,"The coordinate space for a material; U parallels X (horizontal), V parallels Y (vertical), and W parallels Z (perpendicular to the UV plane)."
+value node,A specific type of action node used to handle requests for user input and hold recorded values from action macro recording.
+value set,"In a dynamic block definition, a range or list of values specified for a linear, polar, XY, or rotation parameter."
+vector,A mathematical expression with precise direction and magnitude (length) but without a specific location.
+vertex,A location where edges or polyline segments meet.
+view (AutoCAD),"A graphical representation of a model from a specific location (viewpoint) in space. (3DORBIT, VPOINT, DVIEW, VIEW)"
+view (AutoCAD LT),"A graphical representation of a model from a specific location (viewpoint) in space. (VPOINT, VIEW)"
+view category,A named collection of views in a sheet set often organized by function.
+ViewCube,A user interface element that displays the current orientation of a model and allows interactive rotation or restoration of preset views.
+viewpoint (AutoCAD),"The location in 3D model space from which you are viewing a model. (3DORBIT, DVIEW, VPOINT)"
+viewpoint (AutoCAD LT),The location in 3D model space from which you are viewing a model. (VPOINT)
+viewport,A bounded area that displays some portion of the model space of a drawing; type depends on the TILEMODE system variable setting.
+viewport configuration,A named collection of model viewports that can be saved and restored. (VPORTS)
+view sketching,A state in a model space view for editing and constraining a section line or detail boundary.
+virtual screen display,The area in which the program can pan and zoom without regenerating the drawing.
+visibility mode,Displays or does not display geometry (in a dimmed state) that is invisible for a visibility state. (BVMODE)
+visibility state,"In a dynamic block, a custom property that allows only specified geometry to display in the block reference. (BVSTATE)"
+visual style,A collection of settings that control the display of edges and shading in a viewport.
+volumetric shadows,A photorealistically rendered volume of space cast by the shadow of an object.
+watertight,A closed 3D solid or mesh that has no gaps.
+WCS,See world coordinate system (WCS).
+wheel,A reference to one of the individual user interface elements that make up SteeringWheels for products on Windows.
+wheel surface,The area of SteeringWheels used to organize wedges and other buttons.
+wheel wedge,A section on the surface of a SteeringWheels designated for a specific navigation or orientation tool.
+window selection,A rectangular area specified in the drawing area to select multiple objects at the same time.
+wipeout object,"A polygonal area that masks underlying objects with the current background color, bounded by the wipeout frame."
+wireframe model,The representation of a 3D object using lines and curves to represent its edges.
+workflow,A focused component for enabling repeatable modeling tasks from one Autodesk product to another within an Autodesk suite.
+Workflow Manager,"A user interface that allows you to access, manage, and customize cross-product workflows in an Autodesk suite."
+working drawing,A drawing used for manufacturing or building purposes.
+working folder,The drive and folder path of the operating system's working folder or current directory for the process.
+working set,A group of objects selected for in-place reference editing.
+work plane,Another name for the XY plane of the user coordinate system.
+workspace,"For Windows-based products, a set of menus, toolbars, and dockable windows grouped and organized for a custom, task-oriented drawing environment."
+world coordinates,Coordinates expressed in relation to the world coordinate system (WCS).
+world coordinate system (WCS),"The fixed coordinate system that defines the location of all objects and other coordinate systems in a drawing. In new drawings, the UCS is initially coincident with the WCS."
+wrap around,Behavior where the cursor wraps around the window and appears on the opposite side to allow continuation of a drag operation instead of stopping at the edge of the drawing area.
+X Y Z point filters,See coordinate filters.
+xref,A drawing file referenced from another drawing file; this type of external reference is specific to DWG files. (XREF)
+zoom,To reduce or increase the apparent magnification of the drawing area. (ZOOM)

@@ -8,11 +8,11 @@ namespace Localizer_App.Services
 {
     public class RcGeneratorService
     {
-        // Why: Replaces translatable strings in-place within the raw C++ resource script.
+        // Replaces translatable strings in-place within the raw C++ resource script.
 
         public string Generate(string originalContent, List<ResourceString> resourceStrings)
         {
-            // Why: Sort replacements from back-to-front to keep index locations consistent.
+            // Sort replacements from back-to-front to keep index locations consistent.
             if (string.IsNullOrEmpty(originalContent)) return string.Empty;
             var ordered = SortReplacements(resourceStrings);
             var sb = new StringBuilder(originalContent);
@@ -22,7 +22,7 @@ namespace Localizer_App.Services
 
         private List<ResourceString> SortReplacements(List<ResourceString> resourceStrings)
         {
-            // Why: Filter valid string indices and sort descending by start offset.
+            // Filter valid string indices and sort descending by start offset.
             return resourceStrings
                 .Where(r => r.StartIndex >= 0 && r.EndIndex >= 0)
                 .OrderByDescending(r => r.StartIndex)
@@ -31,7 +31,7 @@ namespace Localizer_App.Services
 
         private void ReplaceAllStrings(StringBuilder sb, List<ResourceString> items)
         {
-            // Why: Replace character segments in the text builder using ResourceString entries.
+            // Replace character segments in the text builder using ResourceString entries.
             foreach (var item in items)
             {
                 string text = string.IsNullOrEmpty(item.Translated) ? item.Text : item.Translated;
@@ -44,7 +44,7 @@ namespace Localizer_App.Services
 
         public static string EscapeRcString(string plainText)
         {
-            // Why: Escape double-quotes inside string literals by doubling them.
+            // Escape double-quotes inside string literals by doubling them.
             if (plainText == null) plainText = string.Empty;
             string escaped = plainText.Replace("\"", "\"\"");
             return "\"" + escaped + "\"";

@@ -17,13 +17,14 @@ namespace Localizer_App.Views
 {
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        // Why: The main desktop coordinator for extracting, translating, and saving localized strings.
+        // The main desktop coordinator for extracting, translating, and saving localized strings.
         private readonly RcParserService _parserService = new RcParserService();
-        private readonly TranslationService _translationService = new TranslationService();
+        private readonly GlossaryService _glossaryService = new GlossaryService();
+        private readonly TranslationService _translationService;
         private readonly ValidationService _validationService = new ValidationService();
         private readonly RcGeneratorService _rcGeneratorService = new RcGeneratorService();
         private readonly TranslationMemoryService _tmService = new TranslationMemoryService();
-        private readonly AiValidationService _aiValidationService = new AiValidationService();
+        private readonly AiValidationService _aiValidationService;
         private string _apiKey = string.Empty;
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -33,16 +34,42 @@ namespace Localizer_App.Views
 
         public MainWindow()
         {
-            // Why: Initialize components, setup bindings, configurations, and load API key.
+            _translationService = new TranslationService(_glossaryService);
+            _aiValidationService = new AiValidationService(_glossaryService);
+            // Initialize components, setup bindings, configurations, and load API key.
             InitializeComponent();
             DataContext = this;
             InitializeProperties();
             _apiKey = LoadApiKeyFromAppData();
+            LoadGlossary();
+        }
+
+        private void LoadGlossary()
+        {
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string csvPath = Path.Combine(baseDir, "glossary.csv");
+            if (!File.Exists(csvPath))
+            {
+                // Search upwards up to 4 levels
+                string dir = baseDir;
+                for (int i = 0; i < 4; i++)
+                {
+                    dir = Path.GetDirectoryName(dir) ?? "";
+                    if (string.IsNullOrEmpty(dir)) break;
+                    string potential = Path.Combine(dir, "glossary.csv");
+                    if (File.Exists(potential))
+                    {
+                        csvPath = potential;
+                        break;
+                    }
+                }
+            }
+            _glossaryService.LoadGlossary(csvPath);
         }
 
         private void InitializeProperties()
         {
-            // Why: Set initial dropdown selections and languages list.
+            // Set initial dropdown selections and languages list.
             TargetLanguages.Add(new TargetLanguage { Name = "Hindi", CultureCode = "hi-IN" });
             TargetLanguages.Add(new TargetLanguage { Name = "Japanese", CultureCode = "ja-JP" });
             TargetLanguages.Add(new TargetLanguage { Name = "French", CultureCode = "fr-FR" });
@@ -102,7 +129,7 @@ namespace Localizer_App.Views
 
         private void OnSelectFileClick(object sender, RoutedEventArgs e)
         {
-            // Why: Open file dialog for selecting a C++ Resource Script file.
+            // Open file dialog for selecting a C++ Resource Script file.
             OpenFileDialog openFileDialog = new OpenFileDialog { Filter = "Resource Files (*.rc)|*.rc" };
             if (openFileDialog.ShowDialog() == true)
             {
@@ -119,7 +146,7 @@ namespace Localizer_App.Views
 
         private void OnExtractStringsClick(object sender, RoutedEventArgs e)
         {
-            // Why: Read, parse, and populate the resource strings grid.
+            // Read, parse, and populate the resource strings grid.
             try
             {
                 string content = File.ReadAllText(SelectedFilePath);
@@ -133,7 +160,7 @@ namespace Localizer_App.Views
 
         private void PopulateStrings(List<ResourceString> parsed)
         {
-            // Why: Clear and insert parsed resource items into the bound list.
+            // Clear and insert parsed resource items into the bound list.
             ResourceStrings.Clear();
             foreach (var str in parsed) ResourceStrings.Add(str);
             StatusMessage = "Extracted " + ResourceStrings.Count + " strings. Ready.";
@@ -146,13 +173,13 @@ namespace Localizer_App.Views
 
         private async void OnTranslateClick(object sender, RoutedEventArgs e)
         {
-            // Why: Execute translation workflow asynchronously.
+            // Execute translation workflow asynchronously.
             await ExecuteTaskAsync(RunTranslationFlow);
         }
 
         private async Task ExecuteTaskAsync(Func<Task> taskFunc)
         {
-            // Why: Async task coordinator that manages loading states and try/catch error handling.
+            // Async task coordinator that manages loading states and try/catch error handling.
             try
             {
                 IsLoading = true;
@@ -167,7 +194,7 @@ namespace Localizer_App.Views
 
         private async Task RunTranslationFlow()
         {
-            // Why: Reload API key and run string translation using cache memory lookup and API fallback.
+            // Reload API key and run string translation using cache memory lookup and API fallback.
             _apiKey = LoadApiKeyFromAppData();
             if (string.IsNullOrEmpty(_apiKey) || _apiKey == "your_gemini_api_key_here")
             {
@@ -179,7 +206,7 @@ namespace Localizer_App.Views
             if (misses.Count > 0)
             {
                 StatusMessage = "Translating " + misses.Count + " strings...";
-                await _translationService.TranslateAsync(misses, SelectedLanguage.Name, SelectedLanguage.CultureCode, _apiKey, SelectedModel);
+                await _translationService.TranslateAsync(misses, SelectedLanguage.Name, SelectedLanguage.CultureCode, _apiKey, SelectedModel, UseGlossary);
                 UpdateCacheAndSave(misses, cache);
             }
             else StatusMessage = "All translations loaded from cache.";
@@ -194,7 +221,7 @@ namespace Localizer_App.Views
 
         private List<ResourceString> ResolveFromCache(Dictionary<string, CacheEntry> cache)
         {
-            // Why: Separate translated cache hits from miss list.
+            // Separate translated cache hits from miss list.
             var misses = new List<ResourceString>();
             CacheHits = 0;
             foreach (var item in ResourceStrings) CheckCacheItem(item, cache, misses);
@@ -205,7 +232,7 @@ namespace Localizer_App.Views
 
         private void CheckCacheItem(ResourceString item, Dictionary<string, CacheEntry> cache, List<ResourceString> misses)
         {
-            // Why: Resolve single string item from translation memory or mark as miss.
+            // Resolve single string item from translation memory or mark as miss.
             if (cache.TryGetValue(item.Key, out CacheEntry? entry))
             {
                 item.Translated = entry.Translated;
@@ -219,7 +246,7 @@ namespace Localizer_App.Views
 
         private void UpdateCacheAndSave(List<ResourceString> misses, Dictionary<string, CacheEntry> cache)
         {
-            // Why: Write translated outputs back to local cache dictionary and save file, excluding Needs Review.
+            // Write translated outputs back to local cache dictionary and save file, excluding Needs Review.
             foreach (var item in misses)
             {
                 if (!string.IsNullOrEmpty(item.Translated))
@@ -243,7 +270,7 @@ namespace Localizer_App.Views
 
         private void RefreshGrid()
         {
-            // Why: Force grid items view refresh.
+            // Force grid items view refresh.
             var temp = ResourceStrings.ToList();
             ResourceStrings.Clear();
             foreach (var item in temp) ResourceStrings.Add(item);
@@ -251,13 +278,13 @@ namespace Localizer_App.Views
 
         private async void OnValidateClick(object sender, RoutedEventArgs e)
         {
-            // Why: Perform AI and structural checks on translation results.
+            // Perform AI and structural checks on translation results.
             await ExecuteTaskAsync(RunValidationFlow);
         }
 
         private async Task RunValidationFlow()
         {
-            // Why: Reload API key and run Gemini QA check and local format tests.
+            // Reload API key and run Gemini QA check and local format tests.
             _apiKey = LoadApiKeyFromAppData();
             if (string.IsNullOrEmpty(_apiKey) || _apiKey == "your_gemini_api_key_here")
             {
@@ -297,7 +324,7 @@ namespace Localizer_App.Views
 
             if (geminiValidateList.Count > 0)
             {
-                var qaResults = await _aiValidationService.ValidateAsync(geminiValidateList, SelectedLanguage.Name, SelectedLanguage.CultureCode, _apiKey, SelectedModel);
+                var qaResults = await _aiValidationService.ValidateAsync(geminiValidateList, SelectedLanguage.Name, SelectedLanguage.CultureCode, _apiKey, SelectedModel, UseGlossary);
                 MapQaResultsOnly(qaResults);
 
                 // Update cache with validation results
@@ -343,7 +370,7 @@ namespace Localizer_App.Views
 
         public async void OnRetryAllReviewsClick(object sender, RoutedEventArgs e)
         {
-            // Why: Click handler for the batch Retry Reviews button.
+            // Click handler for the batch Retry Reviews button.
             var reviewItems = ResourceStrings.Where(r => r.ValidationStatus == "Needs Review" || (r.ValidationScore.HasValue && r.ValidationScore.Value < 80)).ToList();
             if (reviewItems.Count == 0)
             {
@@ -355,7 +382,7 @@ namespace Localizer_App.Views
 
         public async void OnRetryTranslationClick(object sender, RoutedEventArgs e)
         {
-            // Why: Click handler for the row-level Retry button, triggered for Needs Review strings.
+            // Click handler for the row-level Retry button, triggered for Needs Review strings.
             if (sender is Button button && button.DataContext is ResourceString resourceString)
             {
                 await ExecuteTaskAsync(() => RetryTranslationAndValidationBatchAsync(new List<ResourceString> { resourceString }));
@@ -364,7 +391,7 @@ namespace Localizer_App.Views
 
         private async Task RetryTranslationAndValidationBatchAsync(List<ResourceString> items)
         {
-            // Why: Retranslates and re-validates a batch of low-scoring / Needs Review translations.
+            // Retranslates and re-validates a batch of low-scoring / Needs Review translations.
             if (items == null || items.Count == 0) return;
             
             StatusMessage = $"Retrying translation for {items.Count} reviews...";
@@ -377,7 +404,7 @@ namespace Localizer_App.Views
                 throw new Exception($"Gemini API Key is missing or invalid. Please configure GEMINI_API_KEY in config.env:\n{GetApiKeyFilePath()}");
             }
 
-            await _translationService.TranslateAsync(items, SelectedLanguage.Name, SelectedLanguage.CultureCode, _apiKey, SelectedModel);
+            await _translationService.TranslateAsync(items, SelectedLanguage.Name, SelectedLanguage.CultureCode, _apiKey, SelectedModel, UseGlossary);
 
             // 2. Clear old validation fields before validating the new translations.
             foreach (var item in items)
@@ -389,7 +416,7 @@ namespace Localizer_App.Views
 
             // 3. Call validation service for all retried items in batch.
             StatusMessage = $"Validating {items.Count} retried items...";
-            var qaResults = await _aiValidationService.ValidateAsync(items, SelectedLanguage.Name, SelectedLanguage.CultureCode, _apiKey, SelectedModel);
+            var qaResults = await _aiValidationService.ValidateAsync(items, SelectedLanguage.Name, SelectedLanguage.CultureCode, _apiKey, SelectedModel, UseGlossary);
             
             // Map the QA results to the items.
             foreach (var item in items)
@@ -441,7 +468,7 @@ namespace Localizer_App.Views
 
         private void MapQaResultsOnly(List<ValidationOutputItem> qaResults)
         {
-            // Why: Map Gemini QA results back to resource strings.
+            // Map Gemini QA results back to resource strings.
             foreach (var res in ResourceStrings)
             {
                 var match = qaResults.FirstOrDefault(q => q.Key == res.Key);
@@ -456,7 +483,7 @@ namespace Localizer_App.Views
 
         private void RecalculateAndSaveStats()
         {
-            // Why: Recalculate validation statistics based on the final state of all strings.
+            // Recalculate validation statistics based on the final state of all strings.
             var stats = new ValStats();
             int count = 0;
             foreach (var res in ResourceStrings)
@@ -483,21 +510,21 @@ namespace Localizer_App.Views
 
         private void RunLocalValidation()
         {
-            // Why: Perform local checks like empty strings and structural formatting.
+            // Perform local checks like empty strings and structural formatting.
             var list = ResourceStrings.ToList();
             ValidationReport = _validationService.Validate(list, list);
         }
 
         private void ShowValidationPanel()
         {
-            // Why: Set the validation results column visibility to visible.
+            // Set the validation results column visibility to visible.
             ValidationPanel.Visibility = Visibility.Visible;
             StatusMessage = "Validation complete.";
         }
 
         private void OnGenerateRcClick(object sender, RoutedEventArgs e)
         {
-            // Why: Generate translated RC file in memory.
+            // Generate translated RC file in memory.
             try
             {
                 string original = File.ReadAllText(SelectedFilePath);
@@ -513,7 +540,7 @@ namespace Localizer_App.Views
 
         private void OnSaveRcClick(object sender, RoutedEventArgs e)
         {
-            // Why: Choose output file location and write generated RC script.
+            // Choose output file location and write generated RC script.
             SaveFileDialog dialog = new SaveFileDialog { Filter = "Resource Files (*.rc)|*.rc", FileName = SelectedLanguage.CultureCode + ".rc" };
             if (dialog.ShowDialog() == true)
             {
@@ -524,14 +551,14 @@ namespace Localizer_App.Views
 
         private void OnOpenPreviewClick(object sender, RoutedEventArgs e)
         {
-            // Why: Launch the design preview studio window, passing in-memory translated strings.
+            // Launch the design preview studio window, passing in-memory translated strings.
             var preview = new PreviewWindow(ResourceStrings.ToList(), SelectedLanguage.CultureCode);
             preview.ShowDialog();
         }
 
         private string LoadApiKeyFromConfig()
         {
-            // Why: Read the Gemini API Key from App.config securely.
+            // Read the Gemini API Key from App.config securely.
             string configPath = AppDomain.CurrentDomain.BaseDirectory + "App.config";
             if (!File.Exists(configPath)) return string.Empty;
             var document = System.Xml.Linq.XDocument.Load(configPath);
@@ -541,7 +568,7 @@ namespace Localizer_App.Views
 
         private void SaveApiKeyToConfig(string key)
         {
-            // Why: Save the updated Gemini API Key back to App.config securely.
+            // Save the updated Gemini API Key back to App.config securely.
             string configPath = AppDomain.CurrentDomain.BaseDirectory + "App.config";
             if (!File.Exists(configPath)) return;
             var document = System.Xml.Linq.XDocument.Load(configPath);
@@ -553,20 +580,20 @@ namespace Localizer_App.Views
 
         private void ShowError(string message)
         {
-            // Why: Show error in MessageBox and set status text.
+            // Show error in MessageBox and set status text.
             StatusMessage = "Error: " + message;
             MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         protected void OnPropertyChanged(string name)
         {
-            // Why: Trigger bound properties updates in XAML.
+            // Trigger bound properties updates in XAML.
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
         protected void SetProperty<T>(ref T storage, T value, string name)
         {
-            // Why: Standard property setter and notifier logic.
+            // Standard property setter and notifier logic.
             if (EqualityComparer<T>.Default.Equals(storage, value)) return;
             storage = value;
             OnPropertyChanged(name);
@@ -629,6 +656,13 @@ namespace Localizer_App.Views
         {
             get => _selectedModel;
             set => SetProperty(ref _selectedModel, value, nameof(SelectedModel));
+        }
+
+        private bool _useGlossary = true;
+        public bool UseGlossary
+        {
+            get => _useGlossary;
+            set => SetProperty(ref _useGlossary, value, nameof(UseGlossary));
         }
 
         private string _statusMessage = "Ready.";
